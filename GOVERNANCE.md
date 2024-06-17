@@ -25,18 +25,17 @@ Microcks follow the [Code of Conduct](CODE_OF_CONDUCT.md), which is aligned with
 Typically, it is assumed that disputes will be resolved amicably by those involved. However, if the situation becomes more serious, conflicts will be resolved through a voting process. A supermajority of votes from project maintainers is required to make a decision, and the project lead has the final say in the ruling.
 
 ## Meetings
-🚧 We **will** hold monthly Open Community Meetings for each reagions, which mean we have bi-weekly metting to try to be world wide frienfly. Stay tuned, coming soon 🚧.
+🚧 We **will** hold monthly Open Community Meetings for each region, so we will have bi-weekly meetings to try to be worldwide friendly. Stay tuned, coming soon 🚧.
 
-The maintainers will also have closed meetings in order to discuss security reports or Code of Conduct violations... Such meetings should be scheduled by any maintainer in charge on receipt of a security issue or CoC report. All current Maintainers must be invited to such closed meetings, except for any maintainer who is accused of a CoC violation.
+The maintainers will also have closed meetings to discuss security reports or Code of Conduct violations. Any maintainer in charge should schedule such meetings upon receiving a security issue or CoC report. All current Maintainers must be invited to such closed meetings, except for any maintainer accused of a CoC violation.
 
 ## Changes
-This Project Governance is a living document. All key project changes including changes in project governance can be proposed by a GitHub PR and then reviewed and voted on by project maintainers.
+This Project Governance is a living document. All key project changes, including changes in project governance, can be proposed by a GitHub PR and then reviewed and voted on by project maintainers.
 
 As the Microcks community and project **grow**, we are **committed** to _progressing_ by _describing_ and _sharing_ our **governance model** along the way, **the open way**.
 
 ## Credits
-Thanks to [Dawn Foster](https://github.com/geekygirldawn) for the inspiring talk and valuable insights at KubeCon Europe 2022 👀
-"Good Governance Practices for CNCF Projects":
+Thanks to [Dawn Foster](https://github.com/geekygirldawn) for the inspiring talk and valuable insights at KubeCon Europe 2022: "Good Governance Practices for CNCF Projects":
 [Info](https://contribute.cncf.io/resources/videos/2022/good-governance-practices/), [Recording](https://youtu.be/x0tgEpIER1M?si=0EMgdfA1j5kxpXlW) and [slide deck](https://static.sched.com/hosted_files/kccnceu2022/7c/Good_Governance_CNCF_Projects.pdf) 👀
 
 Sections of this document have been borrowed and inspired from the [CoreDNS](https://github.com/coredns/coredns/blob/master/GOVERNANCE.md), [Kyverno](https://github.com/kyverno/kyverno/blob/main/GOVERNANCE.md) and [fluxcd](https://github.com/fluxcd/community/blob/main/GOVERNANCE.md) projects.
