@@ -37,13 +37,13 @@ This repository is a space for discussing and debating various aspects of runnin
 
 ## Discussions and Discord
 
-Reach out with any questions you may have and we'll make sure to answer them as soon as possible and as a community member feel free to jump in and answer questions. 
+Reach out with any questions you may have, and we'll make sure to answer them as soon as possible. As a community member, feel free to jump in and answer questions. 
 
 Microcks utilizes Discord and GitHub ([discussions](https://github.com/orgs/microcks/discussions) and [issues](https://github.com/microcks/microcks/issues)) to facilitate our communications, each serving unique purposes to support our community effectively.
 
 Discord is the go-to for lively conversations, channel announcements, support, and immediate community assistance, making real-time communication seamless and efficient. However, Discord isn't ideal for housing detailed discussions, long-term planning, or tracking the evolution of ideas and decisions.
 
-For more in-depth discussions, planning, and documenting significant decisions, we use GitHub [Issues](https://github.com/microcks/microcks/issues). It allows us to work together on significant decisions more effectively and provides long standing point of reference for our discussions.
+For more in-depth discussions, planning, and documenting significant decisions, we use GitHub [Issues](https://github.com/microcks/microcks/issues). It allows us to work together more effectively on significant decisions and provides a long-standing point of reference for our discussions.
 
 | Platforms  | Link        |
 |:----------|:-------------|
@@ -51,17 +51,24 @@ For more in-depth discussions, planning, and documenting significant decisions, 
 | 💬 Discussions         | https://github.com/orgs/microcks/discussions
 
 ## Community meetings
-We hold monthly Open Community Meetings for each reagions, which mean we have bi-weekly metting to try to be world wide frienfly.
+We hold monthly Open Community Meetings for each region, which means we have bi-weekly meetings to try to be worldwide friendly.
 
-**Open Community Meeting (bi-Weekly):** are a 1 hour, agenda'd and open conversations, with a focus on furthering the Microcks project and organization. 
+**Open Community Meeting (bi-weekly):** These meetings are one-hour open conversations that focus on furthering the Microcks project and organization. 
 
-📢 More details SOON 👀
+[**Monthly Meetings**](https://zoom-lfx.platform.linuxfoundation.org/meetings/microcks?view=month) (Agenda: Open for changes and community input):
+1. **Second Thursday of each month**
+  - Microcks Community Meetings - APAC-friendly
+  - Time: Thursday, 9–10 a.m. CET / 1–2 p.m. Bengaluru
+
+2. **Fourth Thursday of each month**
+  - Microcks Community Meetings - America-friendly
+  - Time: Thursday, 6–7 p.m. CET / 1–2 p.m. EST / 9–12 a.m. PST
 
 You can always catch up offline by watching the recordings on the Microcks YouTube channel.
 
 | Asset | Link        |
 |:-----------|:------------|
-| 🔗 Open Community Meeting | [**Zoom Link 🚧COMING SOON🚧**](https://perdu.com/)<br>
+| 🔗 Open Community Meeting | [**Monthly schedule**](https://zoom-lfx.platform.linuxfoundation.org/meetings/microcks?view=month)<br>
 | 🎥 Meeting Recordings | [**YouTube channel**](https://www.youtube.com/@Microcks/community)
 
 ## Getting involved
