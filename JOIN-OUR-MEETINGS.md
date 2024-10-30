@@ -23,7 +23,8 @@ Visit our [meeting agenda page](https://zoom-lfx.platform.linuxfoundation.org/me
    
    - Click on “Need an invite?” and complete the required fields:
    ![](./assets/images/join-our-meetings-5.png)
-   ℹ️ Please note, it’s highly recommended that you use the same email as your LFID account (or the one you'll use if creating a new LFID) when you request the meeting invitation.
+   ℹ️ Please note, it’s highly recommended that you use the same email as your LFID(\*) account (or the one you'll use if creating a new LFID) when you request the meeting invitation.<p>
+   (\*) Your LFID refers to your account at [OpenProfile](https://openprofile.dev) or [LFX](https://lfx.linuxfoundation.org/) 💡 Learn how to create an account on Linux Foundation-managed service 👉 https://docs.linuxfoundation.org/lfx/sso/create-an-account
 
 
    - Submit your request to receive an invitation email:
