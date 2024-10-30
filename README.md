@@ -55,8 +55,7 @@ We hold monthly Open Community Meetings for each region, which means we have bi-
 
 **Open Community Meeting (bi-weekly):** These meetings are one-hour open conversations that focus on furthering the Microcks project and organization. 
 
-> Please register with your LFID!  You can do so at https://openprofile.dev or https://lfx.linuxfoundation.org/ 💡
-> See how to create an account on Linux Foundation-managed service 👉 https://docs.linuxfoundation.org/lfx/sso/create-an-account
+> ⚠️ Please register and **add the Microcks Community Meetings to your calendar**. 📢 For more details, refer to our [Step-by-Step Guide](https://github.com/microcks/community/blob/main/JOIN-OUR-MEETINGS.md) 💡
 
 [**Monthly Meetings**](https://zoom-lfx.platform.linuxfoundation.org/meetings/microcks?view=month) (Agenda: Open for changes and community input):
 1. **Second Thursday of each month**
