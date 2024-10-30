@@ -15,10 +15,17 @@ Visit our [meeting agenda page](https://zoom-lfx.platform.linuxfoundation.org/me
 ## 3. Get Your Zoom Invite
    - Click on the meeting in the agenda:
    ![](./assets/images/join-our-meetings-3.png)
+   
+   
    - In the meeting details, select the Zoom link:
    ![](./assets/images/join-our-meetings-4.png)
+   
+   
    - Click on “Need an invite?” and complete the required fields:
    ![](./assets/images/join-our-meetings-5.png)
+   ℹ️ Please note, it’s highly recommended that you use the same email as your LFID account (or the one you'll use if creating a new LFID) when you request the meeting invitation.
+
+
    - Submit your request to receive an invitation email:
    ![](./assets/images/join-our-meetings-6.png)
 
