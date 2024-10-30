@@ -15,7 +15,7 @@ Visit our [meeting agenda page](https://zoom-lfx.platform.linuxfoundation.org/me
 ## 3. Get Your Zoom Invite
    - Click on the meeting in the agenda:
    ![](./assets/images/join-our-meetings-3.png)
-   
+   ℹ️ Please note, you can also click the "Register" button at the bottom to jump directly to the registration step, skipping a step.
    
    - In the meeting details, select the Zoom link:
    ![](./assets/images/join-our-meetings-4.png)
