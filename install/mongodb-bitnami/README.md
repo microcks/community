@@ -44,6 +44,8 @@ $ cat /etc/hosts
 ::1 localhost
 ```
 
+This setup is good for local testing, but it is best to configure DNS entries for production environments. Ensure that both Microcks and Keycloak have properly configured Fully Qualified Domain Names (FQDNs) that resolve to your Kubernetes ingress controller's external IP address or load balancer. 
+
 ## Step 2: Prepare the Environment
 
 Enable the metrics-server addon in Minikube:
