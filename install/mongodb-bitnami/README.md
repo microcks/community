@@ -69,7 +69,7 @@ $ helm repo add bitnami https://charts.bitnami.com/bitnami
 Deploy MongoDB with authentication enabled:
 
 ```shell
-$ helm install my-mongodb bitnami/mongodb --namespace microcks-external --set auth.enabled=true --set auth.rootPassword=microcks123 --set auth.username=database-user --set auth.password=database-password --set auth.database=microcks-db
+$ helm install my-mongodb bitnami/mongodb --namespace microcks-external --set auth.enabled=true --set auth.rootPassword=microcks123 --set auth.username=admin --set auth.password=microcks123 --set auth.database=microcks-db
 ```
 
 Wait for the MongoDB pod to be ready:
@@ -77,8 +77,8 @@ Wait for the MongoDB pod to be ready:
 ```shell
 $ kubectl get pods -n microcks-external 
 
-NAME                          READY   STATUS    RESTARTS                                                     
-my-mongodb-5b98bd7569-qg9lz   1/1     Running   1 
+NAME                          READY   STATUS    RESTARTS   AGE                                                  
+my-mongodb-7f9885588f-7mbxj   1/1     Running   0          95s
 ```
 
 ## Step 4: Create MongoDB Credentials Secret for Microcks
@@ -142,12 +142,12 @@ Check that all pods are running correctly:
 ```shell
 $ kubectl get pods -n microcks-external
 
-NAME                                          READY   STATUS              RESTARTS   
-microcks-5cf86dc654-hwm6q                     1/1     Running             0               
-microcks-keycloak-5cfb6fc9c-wbgpf             1/1     Running             0               
-microcks-keycloak-postgresql-8b6bddc5-6ksxt   1/1     Running             0               
-microcks-postman-runtime-b848f4489-dzxvg      1/1     Running             0               
-my-mongodb-5b98bd7569-qg9lz                   1/1     Running             0
+NAME                                          READY   STATUS    RESTARTS      AGE
+microcks-5cf86dc654-47r6q                     1/1     Running   0             4m17s
+microcks-keycloak-5cfb6fc9c-phbx5             1/1     Running   1             4m17s
+microcks-keycloak-postgresql-8b6bddc5-7n2sf   1/1     Running   0             4m17s
+microcks-postman-runtime-b848f4489-8wxz4      1/1     Running   0             4m17s
+my-mongodb-7f9885588f-7mbxj                   1/1     Running   0             6m5s
 ```
 
 
@@ -164,7 +164,7 @@ my-mongodb-5b98bd7569-qg9lz                   1/1     Running             0
 To access MongoDB directly from within the cluster:
 
 ```shell
-$ kubectl exec -it -n microcks-external my-mongodb-[pod-id] -- mongo admin --authenticationDatabase admin -u root -p microcks123
+$ kubectl exec -it -n microcks-external my-mongodb-[pod-id] -- mongosh admin --authenticationDatabase admin -u root -p microcks123
 ```
 
 Replace `[pod-id]` with the actual pod identifier.
