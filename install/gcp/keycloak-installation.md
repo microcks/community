@@ -105,8 +105,6 @@ Wait for 7-8 minutes for the cluster to be provisioned and configure node count 
 
 ### Authenticate with the Service Account
 
-Authenticate using the service account.
-
 ```sh
 $ gcloud auth activate-service-account --key-file=/path/to/microcks-deployer-key.json
 ```
@@ -151,45 +149,32 @@ For example, project ID microcks333, instance name microcks-cloudsql, database n
 
 ## 5. Setting Up Private Connectivity Between GKE and Cloud SQL
 
-### Enable Service Networking API
-
 ```sh
+# Enable Service Networking API
 $ gcloud services enable servicenetworking.googleapis.com --project=<PROJECT-ID>
-```
 
-### Allocate IP Range
-
-```sh
+# Allocate IP Range
 $ gcloud compute addresses create google-managed-services-default \
   --global \
   --purpose=VPC_PEERING \
   --prefix-length=16 \
   --network=default \
   --project=<PROJECT-ID>
-```
 
-### Create VPC Peering
-
-```sh
+# Create VPC Peering
 $ gcloud services vpc-peerings connect \
   --service=servicenetworking.googleapis.com \
   --ranges=google-managed-services-default \
   --network=default \
   --project=<PROJECT-ID>
-```
 
-### Assign Private IP to Cloud SQL
-
-```sh
+# Assign Private IP to Cloud SQL
 $ gcloud sql instances patch <INSTANCE-NAME> \
   --network=default \
   --assign-ip \
   --project=<PROJECT-ID>
-```
 
-### Get Private IP of Cloud SQL Instance
-
-```sh
+# Get Private IP of Cloud SQL Instance
 $ gcloud sql instances describe <INSTANCE-NAME> \
   --format="value(ipAddresses)" \
   --project=<PROJECT-ID>
@@ -224,7 +209,9 @@ externalDatabase:
   scheme: "postgresql"
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
+  ports:
+    http: 80
 
 resources:
   requests:
@@ -236,47 +223,61 @@ resources:
 EOF
 ```
 
-### Install Keycloak
-
+### Install Keycloak and check Pod Status
 ```sh
-$ helm install keycloak bitnami/keycloak -f keycloak.yaml -n microcks --create-namespace
+$ helm install keycloak bitnami/keycloak -f keycloak.yaml
+$ kubectl get pods -l app.kubernetes.io/name=keycloak
 ```
 
-### Check Pod Status
-
+### Install NGINX Ingress Controller.
 ```sh
-$ kubectl get pods -n microcks -l app.kubernetes.io/name=keycloak
+$ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+$ helm repo update
+
+$ helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.service.type=LoadBalancer \
+  --set controller.config."proxy-buffer-size"="128k"
 ```
 
-### Get External IP of Keycloak
-
-```sh
-$ kubectl get svc -n microcks keycloak -o wide
+### Get External IP of Ingress Controller Once available, export it
+```
+$ kubectl get svc -n ingress-nginx ingress-nginx-controller -w
+$ export INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ```
 
-### Upgrade Keycloak with Custom Domain or nip.io Hostname
-
-### Using nip.io Hostname
-```sh
-$ helm upgrade keycloak bitnami/keycloak -n microcks \
-  --reuse-values \
-  --set keycloak.hostname=keycloak.<KEYCLOAK-EXTERNAL-IP>.nip.io \
-  --set keycloak.httpsEnabled=false
+### Create and Apply Ingress Resource to Expose Keycloak
+```
+$ cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: keycloak.$INGRESS_IP.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: 80
+EOF
 ```
 
-### Using a Custom Domain
-If you have a custom domain, update your DNS provider to create an `A` record pointing to the external IP of Keycloak.
-```sh
-$ helm upgrade keycloak bitnami/keycloak -n microcks \
-  --reuse-values \
-  --set keycloak.hostname=auth.<your-custom-domain.com> \
-  --set keycloak.httpsEnabled=true
+### Verify Ingress and Access Keycloak
 ```
-
-Ensure your domain's DNS settings correctly map to the external IP of your Keycloak service by creating an **A Record** in your DNS provider.
-
-Keycloak is available at `http://keycloak.<KEYCLOAK-EXTERNAL-IP>.nip.io`
-
+$ kubectl get ingress
+```
+Keycloak is available at `http://keycloak.<EXTERNAL-IP>.nip.io`
 
 ## 7. Configure Keycloak for your Application
 
