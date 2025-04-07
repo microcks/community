@@ -105,11 +105,11 @@ Create a Kubernetes cluster in the specified region with autoscaling enabled.
 ```sh
 $ gcloud container clusters create <CLUSTER-NAME> \
   --zone us-central1-a \
-  --machine-type e2-medium \
-  --num-nodes 2 \
+  --machine-type e2-standard-4 \
+  --num-nodes 3 \
   --disk-size 50 \
   --enable-autoscaling \
-  --min-nodes 1 \
+  --min-nodes 2 \
   --max-nodes 4 \
   --enable-ip-alias \
   --enable-network-policy \
@@ -230,7 +230,7 @@ $ gcloud sql instances describe <INSTANCE-NAME> \
 
 Follow the [Keycloak deployment guide for GCP GKE](https://github.com/microcks/community/blob/main/install/gcp/keycloak-installation.md) provided by the Microcks community.
 
-Start from **Step 5** of the document and continue through the remaining steps to deploy Keycloak on your GKE cluster.
+Start from **Step 6** of the document and continue through the remaining steps to deploy Keycloak on your GKE cluster.
 
 Once Keycloak is successfully deployed, complete the following configuration:
 
