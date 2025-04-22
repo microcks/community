@@ -37,12 +37,12 @@ $ gcloud beta billing projects link <PROJECT-ID> --billing-account=<BILLING-ACCO
 ---
 
 ## 2. Create Service Account and Assign Required Roles
+If you're working in an enterprise or company environment where you don't have access to an admin account, request the admin user to create the service account and grant the following roles. Once the service account is created and the key file (secret) is provided by the admin/root user, you can authenticate and proceed with the setup as the service account.
 
-Create a service account for deploying Microcks. Replace `<SERVICE-ACCOUNT-NAME>`, `<SERVICE-ACCOUNT-DESCRIPTION>`, and `<PROJECT-ID>` with your values. For example, the service account name could be `microcks-deployer`, and the project ID could be `microcks333`.
-
+### Create the service account for Keycloak deployment
 ```sh
-$ gcloud iam service-accounts create <SERVICE-ACCOUNT-NAME> \
-  --display-name "<SERVICE-ACCOUNT-DESCRIPTION>" \
+$ gcloud iam service-accounts create keycloak-deployer \
+  --display-name "Keycloak Deployer" \
   --project <PROJECT-ID>
 ```
 
@@ -103,7 +103,9 @@ $ gcloud container clusters create <CLUSTER-NAME> \
 
 Wait for 7-8 minutes for the cluster to be provisioned and configure node count and disk size based on your usage or team size.
 
-### Authenticate with the Service Account
+### Authenticate with the Service Accountb
+
+Authenticate using the service account.
 
 ```sh
 $ gcloud auth activate-service-account --key-file=/path/to/microcks-deployer-key.json
@@ -187,46 +189,7 @@ $ gcloud sql instances describe <INSTANCE-NAME> \
 ```sh
 $ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm repo update
-```
-
-### Prepare `keycloak.yaml` Configuration File
-
-```sh
-$ cat > keycloak.yaml <<EOF
-auth:
-  adminUser: admin
-  adminPassword: "<ADMIN-PASSWORD>"
-
-postgresql:
-  enabled: false
-
-externalDatabase:
-  host: "<CLOUDSQL-PRIVATE-IP>"
-  port: 5432
-  database: "<DATABASE-NAME>"
-  user: "<USERNAME>"
-  password: "<USER-PASSWORD>"
-  scheme: "postgresql"
-
-service:
-  type: ClusterIP
-  ports:
-    http: 80
-
-resources:
-  requests:
-    cpu: "500m"
-    memory: "512Mi"
-  limits:
-    cpu: "1"
-    memory: "1Gi"
-EOF
-```
-
-### Install Keycloak and check Pod Status
-```sh
-$ helm install keycloak bitnami/keycloak -f keycloak.yaml
-$ kubectl get pods -l app.kubernetes.io/name=keycloak
+$ kubectl create namespace microcks
 ```
 
 ### Install NGINX Ingress Controller.
@@ -241,56 +204,125 @@ $ helm install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.config."proxy-buffer-size"="128k"
 ```
 
-### Get External IP of Ingress Controller Once available, export it
-```
-$ kubectl get svc -n ingress-nginx ingress-nginx-controller -w
-$ export INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+### Get External IP of Ingress Controller Once Available
+```sh
+$ kubectl get svc -n ingress-nginx ingress-nginx-controller
+--- OUTPUT ---
+NAME                       TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
+ingress-nginx-controller   LoadBalancer   34.118.229.104   <INGRESS_IP>   80:31477/TCP,443:31478/TCP    3m
 ```
 
-### Create and Apply Ingress Resource to Expose Keycloak
+### Custom Domain
+1. If You Have a Custom Domain Create and A record in your DNS provider to point your domain/subdomain to the INGRESS IP. 
+For example:
+- keycloak.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+- microcks.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+
+2. If you don't have a custom domain, you can use a free domain by using nip.io for your domain names, such as:
+- keycloak.<INGRESS_IP>.nip.io
+- microcks.<INGRESS_IP>.nip.io
+
+###  Install cert-manager for SSL Certificates
+```sh
+$ helm repo add jetstack https://charts.jetstack.io
+$ helm repo update
+$ helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
 ```
+
+### Create ClusterIssuer for Let's Encrypt
+```sh
 $ cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
 metadata:
-  name: keycloak-ingress
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: <your-email@example.com>   # Update with your email address
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+```
+### Prepare `keycloak.yaml` Configuration File
+
+```sh
+$ cat > keycloak.yaml <<EOF
+auth:
+  adminUser: admin
+  adminPassword: "microcks123"  # Set a strong password
+
+postgresql:
+  enabled: false  # Disable embedded PostgreSQL
+
+externalDatabase:
+  host: "<CLOUDSQL-PRIVATE-IP>"            # Your Cloud SQL private IP
+  port: 5432
+  database: "<DATABASE-NAME>"       # Your Cloud SQL database name
+  user: "<USER-PASSWORD>"        # Your Cloud SQL username
+  password: "<USER-PASSWORD>"      # Your Cloud SQL password
+  scheme: "postgresql"
+
+service:
+  type: ClusterIP
+  ports:
+    http: 80  
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hostname: keycloak.<YOUR-DOMAIN>.com   # Replace <YOUR-DOMAIN> with your custom domain
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: keycloak.$INGRESS_IP.nip.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: keycloak
-            port:
-              number: 80
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls: true
 EOF
 ```
 
-### Verify Ingress and Access Keycloak
+### Install Keycloak and check Pod Status
+```sh
+$ helm install keycloak bitnami/keycloak -f keycloak.yaml --namespace microcks
+$ kubectl get pods -n microcks
+--- OUTPUT ---
+NAME                                        READY   STATUS    RESTARTS        AGE
+keycloak-0                                  1/1     Running   0               1m
 ```
-$ kubectl get ingress
+
+### Verify Ingress and Get the Keycloak URL
+```sh
+$ kubectl get ingress -n microcks
+--- OUTPUT ---
+NAME       CLASS   HOSTS                           ADDRESS         PORTS     AGE
+keycloak   nginx   keycloak.<YOUR-DOMAIN>.com   34.28.102.121      80, 443   3m
 ```
-Keycloak is available at `http://keycloak.<EXTERNAL-IP>.nip.io`
+
+Keycloak is available at `http://keycloak.<YOUR-DOMAIN>.com`
+
 
 ## 7. Configure Keycloak for your Application
 
 ### Step 1: Create a Microcks Realm
-- Login to the Keycloak dashboard at `http://keycloak.<KEYCLOAK-EXTERNAL-IP>.nip.io`
+- Login to the Keycloak dashboard at `http://keycloak.<YOUR-DOMAIN>.com`
 - Click on `Create Realm` in the top left corner and name it `microcks`.
 
 ### Step 2: Add a Client for Microcks
 - From the left menu, go to `Clients`.
-- Click `Create` and enter the `Client ID` (e.g., `microcks-app`).
+- Click `Create` and enter the `Client ID` (e.g., `microcks-app-js`).
 - Enable `Client authentication` and Click `Next`
-- In `Valid Redirect URIs`, enter your application URL (e.g., `http://my-application.com/*`).
-- In `Web Origins`, enter `http://my-application.com`.
+- In `Valid Redirect URIs`, enter your application URL (e.g., `http://microcks.<YOUR-DOMAIN>.com/*`).
+- In `Web Origins`, enter `http://microcks.<YOUR-DOMAIN>.com`.
 - If you have not deployed your application yet, you can configure this later.
 
 ### Step 3: Create a User
