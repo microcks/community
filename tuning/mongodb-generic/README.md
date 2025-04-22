@@ -99,6 +99,169 @@ db.testResult.dropIndex("serviceId-1");
 db.testConformanceMetric.dropIndex("serviceId-1");
 ```
 
+
+## Performance Results
+We conducted tests on a sample Microcks database to evaluate the impact of indexes on query performance. Below are the results showing the performance differences between queries with and without indexes.
+### Test Setup
+
+- MongoDB version: 4.4.29
+- Collection: dailyStatistic
+- Query: Finding a specific service by day, name, and version
+- Test dataset: Small test database with 7 documents
+
+### With Index
+Create index:
+```javascript
+db.dailyStatistic.createIndex(
+  {day: -1, serviceName: 1, serviceVersion: -1}, 
+  {name: "day-1_serviceName1_serviceVersion-1"}
+);
+```
+
+Run the query with explain
+```javascript
+
+db.dailyStatistic.find({
+  day: "20250205",
+  serviceName: "Petstore API",
+  serviceVersion: "1.0.0"
+}).explain("executionStats");
+
+// Full explain output (abbreviated):
+{
+  "queryPlanner": {
+    // ...
+    "winningPlan": {
+      "stage": "FETCH",
+      "inputStage": {
+        "stage": "IXSCAN",
+        "keyPattern": {
+          "day": -1,
+          "serviceName": 1,
+          "serviceVersion": -1
+        },
+        "indexName": "day-1_serviceName1_serviceVersion-1"
+        // ...
+      }
+    }
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 1,
+    "executionTimeMillis": 25,
+    "totalKeysExamined": 1,
+    "totalDocsExamined": 1,
+    // ...
+  }
+}
+```
+
+**Results:**
+
+- Execution time: 25ms
+- Documents examined: 1 (optimal)
+- Query method: IXSCAN (using index)
+- Keys examined: 1
+- Works: 2
+
+### Without Index
+Drop the index:
+```javascript
+db.dailyStatistic.dropIndex("day-1_serviceName1_serviceVersion-1");
+```
+
+Run the same query without the index:
+```javascript
+db.dailyStatistic.find({
+  day: "20250205",
+  serviceName: "Petstore API",
+  serviceVersion: "1.0.0"
+}).explain("executionStats");
+
+// Full explain output (abbreviated):
+{
+  "queryPlanner": {
+    // ...
+    "winningPlan": {
+      "stage": "COLLSCAN",
+      "filter": {
+        "$and": [
+          { "day": { "$eq": "20250205" } },
+          { "serviceName": { "$eq": "Petstore API" } },
+          { "serviceVersion": { "$eq": "1.0.0" } }
+        ]
+      },
+      "direction": "forward"
+    }
+  },
+  "executionStats": {
+    "executionSuccess": true,
+    "nReturned": 1,
+    "executionTimeMillis": 37,
+    "totalKeysExamined": 0,
+    "totalDocsExamined": 7,
+    // ...
+  }
+}
+```
+**Results:**
+
+- Execution time: 37ms
+- Documents examined: 7 (entire collection)
+- Query method: COLLSCAN (full collection scan)
+- Keys examined: 0
+- Works: 9
+
+### Code for Monitoring Index Performance
+To monitor index usage in an ongoing production environment, you can use:
+```javascript
+db.dailyStatistic.aggregate([
+  { $indexStats: {} }
+]);
+```
+
+To check if specific queries are using indexes effectively:
+```javascript
+db.setProfilingLevel(1, { slowms: 100 });  // Log queries taking > 100ms
+```
+
+After some time, check the slow query log:
+```javascript
+db.system.profile.find(
+  { millis: { $gt: 100 }, ns: "microcks.dailyStatistic" },
+  { op: 1, millis: 1, query: 1, planSummary: 1 }
+).sort({ millis: -1 });
+```
+
+### Performance Analysis
+Even with our small test dataset of only 7 documents, we observed:
+
+- 48% increase in execution time when the index was removed
+- 7x more documents examined without the index
+- 4.5x more internal operations (works) performed
+
+### Understanding docsExamined
+The totalDocsExamined metric shows how many documents MongoDB had to read and check during execution:
+
+- **With index (1 document examined)**: MongoDB read exactly the document it needed
+- **Without index (7 documents examined)**: MongoDB read every document in the collection
+
+This metric directly impacts:
+
+- I/O operations (disk reads)
+- Memory usage during query execution
+- CPU usage (checking conditions)
+
+As your collection grows, the difference between examining 1 document versus millions becomes critical for performance.
+
+### Key Observations
+
+- The MongoDB query planner correctly chose the index when available
+- The indexed query examined exactly the documents it needed (1 document)
+- Without the index, MongoDB had to scan every document in the collection
+- Even with minimal data, the performance difference was measurable
+
+
 ## Best Practices for Indexing
 
 * **Analyze Query Patterns:** Use MongoDB's `explain()` method to see how queries are executed and determine if an index is beneficial.
