@@ -5,7 +5,7 @@ This document provides a common guideline for deploying Microcks in production-g
 
 The goal is to guide users through the deployment process by emphasizing the use of external Keycloak for authentication, native PostgreSQL-compatible databases for data management, and the deployment of Microcks via Helm charts. While the specific cloud provider implementations may vary (e.g., cloud provider-managed services like databases), the document focuses on the essential steps required, leaving the precise configuration and commands to be adapted based on the user’s cloud provider’s tools, documentation, and community-contributed examples.
 
-## Key Deployment Architecture:
+## Key Deployment Architecture
 
 This guideline assumes a deployment architecture utilizing:
 
@@ -15,7 +15,7 @@ This guideline assumes a deployment architecture utilizing:
 * **MongoDB Solution:** A suitable MongoDB solution. This could be:
     * Your cloud provider's managed MongoDB-compatible service (e.g., Amazon DocumentDB for MongoDB Compatibility, Azure Cosmos DB for MongoDB API), *if* fully compatible with Microcks.
     * An external MongoDB instance deployed on your managed Kubernetes cluster (e.g., using a Helm chart like Bitnami's MongoDB chart), if a suitable managed service is not available or preferred.
-
+      
 ## Prerequisites
 
 Before starting, ensure you have the following tools installed and configured locally:
@@ -27,11 +27,11 @@ Before starting, ensure you have the following tools installed and configured lo
 
 ## Deployment Steps
 
-Follow these steps, adapting the specific commands and procedures to your chosen cloud provider.
+Follow these steps, adapting the specific cloud provider commands and procedures as needed.
 
 ## 1. Prepare Cloud Infrastructure and Backing Services
 
-In this section, you will set up the foundational cloud resources required for Microcks.
+In this section, you will set up the foundational cloud resources required for Microcks using your cloud provider's specific tools and console.
 
 1.  **Authenticate and Set Up Cloud Account/Project:**
     * Authenticate with your cloud provider's CLI/SDK.
@@ -63,10 +63,39 @@ In this section, you will set up the foundational cloud resources required for M
         * Ensure it's configured to be accessible from your Kubernetes cluster (see Networking step below).
         * **Note the connection string, database name, username, and password.**
     * **Option B: Deploying External MongoDB on Kubernetes:**
-        * If a suitable managed service is not available or preferred, you will deploy a MongoDB instance directly onto your Kubernetes cluster using a standard Helm chart (like Bitnami's).
-        * Refer to the Microcks community documentation section on **Deploy External MongoDB on GKE** for detailed Helm command parameters and common configurations. You will adapt these instructions to your specific cloud provider's managed Kubernetes environment.
+        - If a suitable managed service is not available or preferred, you will deploy a MongoDB instance directly onto your Kubernetes cluster using a standard Helm chart (like Bitnami's). You will configure it to use persistent storage suitable for your cloud provider.
+        - Add Bitnami Helm Chart Repository and Install MongoDB
 
-6.  **Establish Private Network Connectivity:**
+         ```bash
+         $ helm repo add bitnami https://charts.bitnami.com/bitnami
+         
+         $ helm install mongodb bitnami/mongodb -n microcks \
+           --set architecture=standalone \
+           --set persistence.enabled=true \
+           --set persistence.size=10Gi \
+           --set persistence.storageClass=standard \
+           --set resources.requests.cpu=500m \
+           --set resources.requests.memory=1Gi \
+           --set resources.limits.cpu=1 \
+           --set resources.limits.memory=2Gi \
+           --set auth.enabled=true \
+           --set auth.rootPassword=<ROOT_PASSWORD> \
+           --set auth.username=<USERNAME> \
+           --set auth.password=<PASSWORD> \
+           --set auth.database=<DATABASE>
+         ```
+
+6.  **Create MongoDB Connection Secret:**
+
+    Create a Kubernetes `Secret` containing the username and password for your MongoDB instance. Replace the placeholder values with the actual credentials obtained from your cloud provider (for managed     service) or your MongoDB deployment process (for on-K8s deployment).
+
+    ```bash
+    $ kubectl create secret generic microcks-mongodb-connection -n microcks \
+      --from-literal=username=<YOUR-MONGODB-USERNAME> \
+      --from-literal=password=<YOUR-MONGODB-PASSWORD>
+    ```
+
+7.  **Establish Private Network Connectivity:**
     * Configure networking to ensure secure, private communication between:
         * Your Kubernetes cluster nodes and the Managed PostgreSQL instance.
         * Your Kubernetes cluster nodes and the Managed MongoDB instance (if using Option A in step 5).
@@ -74,113 +103,321 @@ In this section, you will set up the foundational cloud resources required for M
 
 ## 2. Deploy Shared Services on Kubernetes
 
-In this section, you deploy common components necessary for Microcks and Keycloak within your Kubernetes cluster.
+In this section, you deploy common components necessary for Microcks and Keycloak within your Kubernetes cluster using standard Helm and kubectl commands.
 
 1.  **Add Required Helm Repositories:**
-    * Add the Helm repositories for necessary charts like `bitnami`, `ingress-nginx`, `microcks`, and `strimzi` (if deploying asynchronous features).
+
+    ```bash
+    $ helm repo add bitnami 
+    $ helm repo add ingress-nginx
+    $ helm repo add jetstack 
+    $ helm repo add microcks
+    
+    # Add Strimzi only if planning to deploy asynchronous features with Kafka
+    $ helm repo add strimzi
+    $ helm repo update
+    ```
 
 2.  **Create Kubernetes Namespace:**
-    * Create a dedicated Kubernetes namespace for your Microcks and related deployments (e.g., `microcks`).
 
+    ```bash
+    $ kubectl create namespace microcks
+    ```
+    
 3.  **Install Ingress Controller:**
-    * Install an Ingress Controller (e.g., NGINX Ingress Controller) onto your cluster using its standard Helm chart. This will route external traffic to your services.
-    * **Note the external IP or hostname assigned to the Ingress Controller's LoadBalancer service.**
+   
+    Install an Ingress Controller (e.g., NGINX Ingress Controller) onto your cluster using its standard Helm chart. This will route external traffic to your services. You may need to adjust `controller.service.type` or other parameters based on your cloud.
 
-4.  **Configure DNS / Domains:**
-    * Set up DNS records in your domain provider (or use a service like nip.io for testing) to point desired hostnames (e.g., `keycloak.<YOUR-DOMAIN>`, `microcks.<YOUR-DOMAIN>`, `microcks-grpc.<YOUR-DOMAIN>`, `kafka.<YOUR-DOMAIN>` if async is used) to the Ingress Controller's external IP/hostname.
+    ```bash
+    $ helm install ingress-nginx ingress-nginx/ingress-nginx \
+      --namespace ingress-nginx \
+      --create-namespace \
+      --set controller.service.type=LoadBalancer \
+      --set controller.config."proxy-buffer-size"="128k"
+    ```
+    * **Note the external IP or hostname assigned to the Ingress Controller's LoadBalancer service.** You can get this using `$ kubectl get svc -n ingress-nginx ingress-nginx-controller`.
 
-5.  **Install Certificate Manager:**
-    * Install `cert-manager` using its standard Helm chart. This will automate the provisioning and management of TLS certificates.
+5.  **Configure DNS / Domains:**
 
-6.  **Create ClusterIssuer:**
-    * Configure a `ClusterIssuer` or `Issuer` resource for `cert-manager` (e.g., using Let's Encrypt) to automatically issue certificates for your domains.
+    Set up DNS records in your domain provider (or use a service like nip.io for testing) to point desired hostnames (e.g., `keycloak.<YOUR-DOMAIN>`, `microcks.<YOUR-DOMAIN>`, `microcks-grpc.<YOUR-DOMAIN>`, `kafka.<YOUR-DOMAIN>` if async is used) to the Ingress Controller's external IP/hostname.
+
+7.  **Install Certificate Manager:**
+
+    ```bash
+    $ helm install cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --set installCRDs=true
+    ```
+
+8.  **Create ClusterIssuer:**
+
+    ```bash
+    $ cat <<EOF | kubectl apply -f -
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: letsencrypt-prod
+    spec:
+      acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: <your-email@example.com>  # Update with your email address
+        privateKeySecretRef:
+          name: letsencrypt-prod-private-key
+        solvers:
+        - http01:
+            ingress:
+              class: nginx # Or the class of your Ingress Controller
+    EOF
+    ```
 
 ## 3. Deploy and Configure External Keycloak
 
-In this section, you deploy Keycloak using the managed PostgreSQL database provisioned earlier.
+1.  **Prepare Keycloak Helm Values:**
 
-1.  **Deploy Keycloak using Helm:**
-    * Follow the [Keycloak deployment guide](https://github.com/microcks/community/blob/main/install/gcp/keycloak-installation.md#6-deploy-keycloak-on-gke-with-cloud-sql) provided by the Microcks community. Start from Step 6 of that document and continue through the remaining deployment steps to deploy Keycloak on your cluster using the managed PostgreSQL database and the shared services (Ingress, Cert-Manager) installed in the previous section. You will adapt the Helm values and commands to your specific cloud setup.
+    Create a Helm values file (e.g., `keycloak-values.yaml`) to configure the Bitnami Keycloak Helm chart. Replace the placeholder values with your actual details.
 
-2.  **Verify Keycloak Deployment:**
-    * Check the status of the Keycloak pods to ensure they are running.
-        ```bash
-        kubectl get pods -n microcks
-        ```
-    * Verify the Keycloak Ingress resource and get its URL.
-        ```bash
-        kubectl get ingress -n microcks
-        ```
+    ```bash
+    $ cat > keycloak-values.yaml <<EOF
+    auth:
+      adminUser: admin
+      adminPassword: <KEYCLOAK-ADMIN-PASSWORD> # Set a strong password
+
+    postgresql:
+      enabled: false
+
+    externalDatabase:
+      host: "<YOUR-MANAGED-POSTGRES-HOST>" # Your Managed PostgreSQL-Compatible Database endpoint or IP
+      port: 5432
+      database: "<DATABASE-NAME>"
+      user: "<USER-PASSWORD>" 
+      password: "<USER-PASSWORD>"
+      scheme: "postgresql"
+
+    service:
+      type: ClusterIP
+      ports:
+        http: 80
+
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx # Or the class of your Ingress Controller
+      hostname: keycloak.<YOUR-DOMAIN/IP.nip.io> # Replace with your desired Keycloak hostname
+      annotations:
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        cert-manager.io/cluster-issuer: letsencrypt-prod # Or the name of your chosen ClusterIssuer/Issuer
+      tls: true
+    EOF
+    ```
+
+3.  **Install Keycloak using Helm:**
+
+    ```bash
+    $ helm install keycloak bitnami/keycloak -n microcks -f keycloak-values.yaml
+    ```
+
+4.  **Verify Keycloak Deployment Get Keycloak Ingress UR:**
+
+    ```bash
+    $ kubectl get pods -n microcks
+    $ kubectl get ingress -n microcks
+    ```
     * Access Keycloak via the configured hostname to ensure it's reachable.
 
-3.  **Configure Keycloak for Microcks:**
-    * Once Keycloak is successfully deployed and accessible via its domain, complete the following configuration within the Keycloak administration console:
-        * Create a `microcks` realm.
-        * Set up a client for Microcks within that realm (e.g., `microcks-app-js`). Configure redirect URIs and web origins for your Microcks hostname.
-        * Create a user (or users) and assign them appropriate roles for accessing the Microcks dashboard within the `microcks` realm.
+5.  **Configure Keycloak for Microcks:**
+    * Once Keycloak is successfully deployed and accessible via its domain, complete the following configuration within the Keycloak administration console using the admin credentials defined in your `keycloak-values.yaml`:
+        * Create a **`microcks`** realm.
+        * Set up a client for Microcks within that realm (e.g., **`microcks-app-js`**). Configure Valid Redirect URIs and Web Origins for your Microcks hostname (e.g., `https://microcks.<YOUR-DOMAIN/IP.nip.io>/*`).
+        * Create a user (or users) and assign them appropriate roles (e.g., `user`, `admin`) for accessing the Microcks dashboard within the **`microcks`** realm.
 
 ## 4. Deploy Microcks with Default Options
 
-Deploy Microcks, connecting it to the external Keycloak and your MongoDB solution.
+1.  **Prepare Microcks Helm Values:**
 
-1.  **Create MongoDB Connection Secret (If deploying MongoDB on Kubernetes):**
-    * If you chose Option B for your MongoDB solution (deploying on Kubernetes in section 1, step 5), create a Kubernetes `Secret` containing the credentials for your MongoDB instance. This secret will be referenced in the Microcks Helm values.
+    Create a Helm values file (e.g., `microcks-values.yaml`) to configure the Microcks Helm chart. This template uses the `mongodb.secretRef` pattern to securely pass credentials. Replace the placeholder values with your actual details.
 
-2.  **Prepare Microcks Helm Values:**
-    * Create a Helm values file (e.g., `microcks-values.yaml`) to configure the Microcks Helm chart.
-    * Configure the `microcks.url`, `ingressClassName`, and ingress annotations (referencing your cert-manager ClusterIssuer).
-    * Disable the embedded Keycloak and MongoDB (`keycloak.install: false`, `mongodb.install: false`).
-    * Configure the external Keycloak details (`keycloak.enabled: true`, `keycloak.url`, `keycloak.privateUrl`, `keycloak.realm`, `keycloak.client.id`, `keycloak.client.secret`).
-    * Configure the MongoDB connection:
-        * If using a managed service (Option A in section 1, step 5), provide the connection string using `env: SPRING_DATA_MONGODB_URI`.
-        * If using MongoDB on Kubernetes (Option B in section 1, step 5), reference the connection secret using `mongodb.secretRef`.
-    * Configure CORS settings if necessary (`CORS_REST_ALLOWED_ORIGINS`).
-    * Configure gRPC ingress if needed (`grpcEnableTLS`, `grpcIngressClassName`, `grpcIngressAnnotations`).
+    ```bash
+    $ cat > microcks-values.yaml <<EOF
+    appName: microcks
+    ingresses: true
 
-3.  **Deploy Microcks with Default Options:**
-    * Deploy Microcks using the Helm chart and your `microcks-values.yaml`.
-    * Refer to the Microcks community documentation section on [Deploying Microcks with Default Options](https://github.com/microcks/community/blob/main/install/gcp/README.md#8-deploy-microcks-on-gke-with-default-options) for detailed Helm command parameters and common configurations (e.g., similar to Step 8 in the GKE example). You will adapt these instructions to your specific cloud environment.
+    microcks:
+      url: microcks.<YOUR-DOMAIN/IP.nip.io>     # Replace with your desired Microcks hostname
+      ingressClassName: nginx       # Or the class of your Ingress Controller
+      ingressAnnotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 
-4.  **Verify Microcks Deployment (Default):**
-    * Check the status of the Microcks and Postman Runtime pods.
-        ```bash
-        kubectl get pods -n microcks
-        ```
-    * Verify the Microcks Ingress resource and get its URL.
-        ```bash
-        kubectl get ingress -n microcks
-        ```
+      grpcEnableTLS: true
+      grpcIngressClassName: nginx 
+      grpcIngressAnnotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"      # Or the name of your chosen ClusterIssuer/Issuer
+        nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+
+      env:
+        - name: CORS_REST_ALLOWED_ORIGINS
+          value: "https://keycloak.<YOUR-DOMAIN/IP.nip.io>"     # Replace with your Keycloak hostname
+        - name: CORS_REST_ALLOW_CREDENTIALS
+          value: "true"
+
+    keycloak:
+      enabled: true
+      install: false
+      url: keycloak.<YOUR-DOMAIN/IP.nip.io>     # Replace with your Keycloak hostname (external)
+      privateUrl: https://keycloak.<YOUR-DOMAIN/IP.nip.io>
+      realm: microcks
+      client:
+        id: <YOUR-KEYCLOAK-CLIENT-ID> 
+        secret: <YOUR-KEYCLOAK-CLIENT-SECRET>
+    
+    mongodb:
+      install: false        # Disable embedded MongoDB
+      uri: <YOUR-URI>       # MongoDB-compatible service URI (Replace with your cloud provider's URI)
+      uriParameters: <YOUR-URI-PARAMETERS>      # URI Parameters (Modify as needed for your service)
+      database: <DATABASE-NAME>
+      secretRef:
+        secret: microcks-mongodb-connection 
+        usernameKey: username
+        passwordKey: password 
+
+
+    ingress:
+      enabled: true
+      tls: true
+    EOF
+    ```
+
+2.  **Deploy Microcks:**
+
+    ```bash
+    $ helm install microcks microcks/microcks -n microcks -f microcks-values.yaml
+    ```
+
+3.  **Verify Pod Status and Get Microcks Ingress URL:**
+   
+    ```bash
+    $ kubectl get pods -n microcks
+    $ kubectl get ingress -n microcks
+    ```
+    
+    * Microcks is available at: `microcks.<YOUR-DOMAIN/IP.nip.io>` gRPC mock service is available at: `microcks-grpc.<YOUR-DOMAIN/IP.nip.io>`
     * Access the Microcks UI via your configured hostname and log in using the user created in Keycloak.
 
 ## 5. Deploy Microcks with Asynchronous Options
 
 If you require support for asynchronous protocols (like Kafka), follow these additional steps.
 
-1.  **Enable SSL Passthrough on Ingress Controller (If applicable):**
-    * Depending on your Ingress Controller and setup, you might need to enable SSL Passthrough for async protocols like Kafka/gRPC. Consult your Ingress Controller's documentation. A common way involves patching the Ingress Controller deployment using `kubectl patch`.
+1.  **Enable SSL Passthrough on Ingress Controller:**
+
+    Depending on your Ingress Controller configuration and setup, you might need to enable SSL Passthrough for async protocols like Kafka/gRPC that require it. Consult your Ingress Controller's documentation. For NGINX Ingress Controller, this often involves patching the deployment.
+
+    ```bash
+    $ kubectl patch -n ingress-nginx deployment/ingress-nginx-controller --type='json' \
+      -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--enable-ssl-passthrough"}]'
+    ```
 
 2.  **Install Strimzi Operator for Kafka Support:**
-    * Install the Strimzi Kafka Operator onto your Kubernetes cluster using its provided manifest or Helm chart. This operator manages Kafka clusters within Kubernetes.
+
+    ```bash
+    $ kubectl apply -f 'https://strimzi.io/install/latest?namespace=microcks' -n microcks
+    ```
 
 3.  **Prepare Microcks Helm Values (for Async):**
-    * Create a new Helm values file (e.g., `microcks-async-values.yaml`), starting from your default values file.
-    * Add or modify the `features.async` section to enable asynchronous features (`features.async.enabled: true`).
-    * Configure the Kafka settings (`features.async.kafka`). You can choose to have the Microcks chart deploy Kafka via Strimzi (`features.async.kafka.install: true`) or connect to an existing Kafka (`features.async.kafka.install: false` and configure connection details). If installing Kafka via the chart, configure the Kafka Ingress settings.
 
-4.  **Deploy Microcks with Asynchronous Options:**
-    * Deploy or upgrade your Microcks deployment using the Helm chart and your `microcks-async-values.yaml`.
-    * Refer to the Microcks community documentation section on [Deploying Microcks with Asynchronous Options](https://github.com/microcks/community/blob/main/install/gcp/README.md#9-deploy-microcks-on-gke-with-asynchronous-options) for detailed Helm command parameters and configurations (e.g., similar to Step 9 in the GKE example). You will adapt these instructions to your specific cloud environment.
+    Create a new Helm values file named microcks-async-values.yaml to configure the Microcks Helm chart for asynchronous features This file will contain the complete configuration, including settings from the default deployment and the Kafka configuration.
 
-5.  **Verify Microcks Deployment (Async):**
-    * Check the status of all Microcks-related pods, including the Async Minion and Kafka components if installed.
-        ```bash
-        kubectl get pods -n microcks
-        ```
-    * Verify the Ingress resources for Microcks and Kafka (if applicable) and get their URLs.
-        ```bash
-        kubectl get ingress -n microcks
-        ```
-    * Confirm asynchronous mocking/testing capabilities within the Microcks UI.
+    ```bash
+    $ cat > microcks-async-values.yaml <<EOF
+    appName: microcks
+    ingresses: true
+
+    microcks:
+      url: microcks.<YOUR-DOMAIN/IP.nip.io>     # Replace with your desired Microcks hostname
+      ingressClassName: nginx       # Or the class of your Ingress Controller
+      ingressAnnotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+      grpcEnableTLS: true
+      grpcIngressClassName: nginx 
+      grpcIngressAnnotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"      # Or the name of your chosen ClusterIssuer/Issuer
+        nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+        nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+
+      env:
+        - name: CORS_REST_ALLOWED_ORIGINS
+          value: "https://keycloak.<YOUR-DOMAIN/IP.nip.io>"     # Replace with your Keycloak hostname
+        - name: CORS_REST_ALLOW_CREDENTIALS
+          value: "true"
+
+    keycloak:
+      enabled: true
+      install: false
+      url: keycloak.<YOUR-DOMAIN/IP.nip.io>     # Replace with your Keycloak hostname (external)
+      privateUrl: https://keycloak.<YOUR-DOMAIN/IP.nip.io>
+      realm: microcks
+      client:
+        id: <YOUR-KEYCLOAK-CLIENT-ID> 
+        secret: <YOUR-KEYCLOAK-CLIENT-SECRET>
+    
+    mongodb:
+      install: false        # Disable embedded MongoDB
+      uri: <YOUR-URI>       # MongoDB-compatible service URI (Replace with your cloud provider's URI)
+      uriParameters: <YOUR-URI-PARAMETERS>      # URI Parameters (Modify as needed for your service)
+      database: <DATABASE-NAME>
+      secretRef:
+        secret: microcks-mongodb-connection 
+        usernameKey: username
+        passwordKey: password 
+
+    features:
+      async:
+        enabled: true
+        kafka:
+          install: true
+          url: kafka.<YOUR-DOMAIN/IP.nip.io>        # Replace with your desired Kafka hostname 
+          ingressClassName: nginx       # Or the class of your Ingress Controller
+          ingressAnnotations:
+            cert-manager.io/cluster-issuer: "letsencrypt-prod" 
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            # Note: ssl-passthrough is often required for Kafka protocols via Ingress
+            nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+
+    ingress:
+      enabled: true
+      tls: true    
+    EOF
+    ```
+
+4.  **Deploy Microcks:**
+   
+    ```bash
+    # If upgrading an existing Microcks deployment:
+    $ helm upgrade microcks microcks/microcks -n microcks -f microcks-async-values.yaml
+
+    If deploying Microcks for the first time with async enabled:
+    $ helm install microcks microcks/microcks -n microcks -f microcks-async-values.yaml
+    ```
+
+5.  **Verify Pod Status and Get Microcks Ingress URL:**
+
+    ```bash
+    $ kubectl get pods -n microcks
+    $ kubectl get ingress -n microcks
+    ```
+
+    * Microcks is available at: `microcks.<YOUR-DOMAIN/IP.nip.io>` gRPC mock service is available at: `microcks-grpc.<YOUR-DOMAIN/IP.nip.io>` Kafka broker is available at: `microcks-kafka.kafka.<YOUR-DOMAIN/IP.nip.io>`
+    * Access the Microcks UI and confirm asynchronous mocking/testing capabilities.
 
 ## Contributing to the Community: Post-Deployment Insights
 Sharing your cloud provider-specific deployment scripts, configurations, and lessons learned. Enhance the shared documentation and engage in community discussions to improve the experience for all users.
