@@ -395,7 +395,7 @@ Whether you're an experienced DevOps engineer, a security enthusiast, or someone
 - 🌍 **Localization** – Translate this guide into other languages for broader accessibility.
 - 🤖 **Automation Scripts** – Provide shell or Python scripts to automate key deployment steps.
 
-If you’d like to contribute, please open a [Pull Request](https://github.com/microcks/community/tree/main/install/aws) or file an [Issue](https://github.com/microcks/community/issues) with your suggestions.
+If you’d like to contribute, please open a [Pull Request](https://github.com/microcks/community/tree/main/install/aws) or file an [Issue](https://github.com/microcks/community/issues) with your suggestions. You can also contribute directly to the [Microcks documentation](https://microcks.io/documentation/) by improving guides, tutorials, or adding new content.
 
 Together, we can make this deployment guide more reliable, secure, and accessible to everyone.
 
