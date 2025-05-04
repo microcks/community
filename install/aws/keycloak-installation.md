@@ -108,7 +108,7 @@ aws eks update-kubeconfig \
 
 ### Step 4: Update VPC CNI Add-on (optional but recommended)
 ```sh
-eksctl update addon \
+eksctl create  addon \
   --name vpc-cni \
   --cluster <CLUSTER-NAME> \
   --region <REGION>
@@ -166,6 +166,15 @@ Connect to the RDS PostgreSQL instance:
 ```sh
 psql -h <Aurora-endpoint> -U microcks -d postgres
 ```
+Make the Aurora cluster publicly accessible using the CLI (optional, for database creation). Be sure to disable public access after creating the database to ensure security:
+```sh
+aws rds modify-db-instance \
+  --db-instance-identifier microcks-db-instance \
+  --publicly-accessible \
+  --apply-immediately \
+  --region <REGION>
+```
+
 Create Database:
 ```sh
 CREATE DATABASE keycloak_db;
@@ -175,13 +184,94 @@ CREATE DATABASE keycloak_db;
 ```sh
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
+kubectl create namespace microcks
 ```
+### Install NGINX Ingress Controller
+```sh
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.service.type=LoadBalancer \
+  --set controller.config."proxy-buffer-size"="128k"
+```
+### Get External IP of Ingress Controller Once Available
+```sh
+kubectl get svc -n ingress-nginx ingress-nginx-controller
+```
+External-IP is your's INGRESS_IP.
+If you don't have a custom domain, you can use a free domain by using nip.io for your domain names, such as:
+- keycloak.<INGRESS_IP>.nip.io
+- microcks.<INGRESS_IP>.nip.io
+
+### Install cert-manager for SSL Certificates
+```sh
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
+```
+### Create ClusterIssuer for Let's Encrypt
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: <your-email@example.com>   # Update with your email address
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+```
+
+### Update your ingress configuration
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak
+  namespace: microcks
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-Host $host;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "keycloak.<YOUR-DOMAIN>.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - "keycloak.<YOUR-DOMAIN>.com"
+    secretName: keycloak-tls
+EOF
+```
+
 ### Prepare keycloak.yaml Configuration File
 ```sh
-cat > keycloak-values.yaml <<EOF
+cat > keycloak.yaml <<EOF
 auth:
   adminUser: admin
-  adminPassword: "microcks123"
+  adminPassword: "microcks123"   # Strong Password
 
 postgresql:
   enabled: false
@@ -206,71 +296,75 @@ resources:
   limits:
     cpu: "1"
     memory: "1Gi"
+
+persistence:
+  enabled: true
+  storageClass: "gp2"       # Or your EKS default storage class, like gp3
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hostname: keycloak.<YOUR-DOMAIN>.com  # Replace <YOUR-DOMAIN> with your custom domain
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls: true
 EOF
 ```
+- Use Kuberenetes Secrets for variables like `adminUser`, `adminPassword`, `database`, `user`, `password` in production deployment to ensure security.
+- Ensure persistence is enabled to retain Keycloak data across pod restarts. The `persistence` block in your values file handles this by provisioning a PersistentVolumeClaim.
+
+
+### Custom Domain
+1. If You Have a Custom Domain Create and A record in your DNS provider to point your domain/subdomain to the INGRESS IP. For example:
+- keycloak.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+- microcks.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+2. If you don't have a custom domain, you can use a free domain by using nip.io for your domain names, such as:
+- keycloak.<INGRESS_IP>.nip.io
+- microcks.<INGRESS_IP>.nip.io
+
 ### Install Keycloak and check Pod Status
 ```sh
-helm install keycloak bitnami/keycloak -f keycloak-values.yaml
-kubectl get pods -l app.kubernetes.io/name=keycloak
+helm install keycloak bitnami/keycloak -f keycloak.yaml
+kubectl get pods -n microcks
 ```
 
-### Install NGINX Ingress Controller
-```sh
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
-  --create-namespace \
-  --set controller.service.type=LoadBalancer \
-  --set controller.config."proxy-buffer-size"="128k"
-```
 ### Get External IP of Ingress Controller Once available, export it
 ```sh
 kubectl get svc -n ingress-nginx ingress-nginx-controller -w
-export INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-```
-
-### Create and Apply Ingress Resource to Expose Keycloak
-```sh
-cat <<EOF | kubectl apply -f -
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: keycloak-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: keycloak.$INGRESS_IP.nip.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: keycloak
-            port:
-              number: 80
-EOF
+export INGRESS_IP=$(dig +short $(kubectl -n ingress-nginx get svc ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}') | head -n 1)
+echo $INGRESS_IP
 ```
 
 ### Verify Ingress and Access Keycloak
 ```sh
-kubectl get ingress
+kubectl get ingress -n microcks
 ```
-Keycloak is available at `http://keycloak.<EXTERNAL-IP>.nip.io`
+Get host URL.
+Keycloak is available at `https://keycloak.<YOUR-DOMAIN>.com`
+
+## 📁 Deployment File Structure
+Here’s a suggested structure for your deployment files:
+```sh
+.
+├── keycloak.yaml   # Helm values for Keycloak (admin credentials, DB config, ingress, etc.)
+├── keycloak-ingress.yaml   # Optional: Separate ingress if not using inline in values file
+├── cert-manager-issuer.yaml    # ClusterIssuer YAML for Let's Encrypt ACME
+└── KeycloakEKSFullAccessPolicy.json    # IAM policy used to allow necessary EKS/RDS actions
+```
+Organizing your files this way improves maintainability and clarity for other contributors or automation scripts.
 
 ## 6. Configure Keycloak for your Application
 ### Step 1: Create a Microcks Realm
-- Login to the Keycloak dashboard at `http://keycloak.<YOUR-DOMAIN>.com`
+- Login to the Keycloak dashboard at `https://keycloak.<YOUR-DOMAIN>.com`
 - Click on `Create Realm` in the top left corner and name it `microcks`.
 
 ### Step 2: Add a Client for Microcks
 - From the left menu, go to `Clients`.
-- Click `Create` and enter the C`lient ID` (e.g., `microcks-app-js`).
+- Click `Create` and enter the `Client ID` (e.g., `microcks-app-js`).
 - Enable `Client authentication` and Click `Next`.
 - In `Valid Redirect URIs`, enter your application URL (e.g., `http://microcks.<YOUR-DOMAIN>.com/*`).
 - In `Web Origins`, enter `http://microcks.<YOUR-DOMAIN>.com`.
@@ -281,7 +375,7 @@ Keycloak is available at `http://keycloak.<EXTERNAL-IP>.nip.io`
 - Click `Add User` and enter a `Username`, `Email` and Click `Save`.
 - Go to the `Credentials` tab, set a `password`, and save it.
 
-🎉 Congratulations! You have successfully deployed Keycloak on AWS Elastic Kubernetes Service (EKS) with AWS Aurora (PostegreSQL) Database.
+🎉 Congratulations! You have successfully deployed Keycloak on AWS Elastic Kubernetes Service (EKS) with AWS Aurora (PostgreSQL) Database.
 
 ---
 
