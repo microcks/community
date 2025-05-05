@@ -304,6 +304,7 @@ EOF
 ```
 
 ### 7.3 Deploy Microcks
+
 ```sh
 helm install microcks microcks/microcks \
     -n microcks \
@@ -311,6 +312,7 @@ helm install microcks microcks/microcks \
 ```
 
 ### 7.4 Verify Pod Status
+
 ```sh
 kubectl get pods -n microcks
 ```
