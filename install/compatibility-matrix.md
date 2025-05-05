@@ -25,52 +25,62 @@ If you're using Microcks in production, please contribute your configuration det
 2. Adding your tested configuration to the appropriate tables
 3. Creating a pull request with your changes
 
-For each compatibility entry, please:
-- Add the specific versions you've tested (e.g., "MongoDB 5.0.6, 6.0.1")
-- If a configuration doesn't work, please note it as "Not Available"
-- Leave blank if you haven't tested this combination
-
 ## Compatible Cloud Providers
 
 The table below shows which Cloud Providers have been tested and validated with different Microcks versions:
 
-| Certified Cloud Providers | 1.11.0 |       | 1.11.1 |       | 1.11.2 |       |
-|---------------------------|--------|--------|--------|--------|--------|--------|
-|                           | UPI    | IPI    | UPI    | IPI    | UPI    | IPI    |
-| Amazon Web Services       |        |        |        |        |        |        |
-| Google Cloud Platform     |        |        |        |        |        |        |
-| Microsoft Azure           |        |        |        |        |        |        |
-| Oracle Cloud              |        |        |        |        |        |        |
-| Scaleway                  |        |        |        |        |        |        |
-| OVH                       |        |        |        |        |        |        |
+| Certified Cloud Providers | 1.10.x | 1.11.x | 1.12.x |
+|---------------------------|--------|--------|--------|
+| Amazon Web Services       |        |        |        |
+| Google Cloud Platform     |        |        |        |
+| Microsoft Azure           |        |        |        |
+| Oracle Cloud              |        |        |        |
+| Scaleway                  |        |        |        |
+| OVH                       |        |        |        |
 
-## Dependency Version Compatibility
+### Kubernetes distrib
 
-Please list the dependency versions you've tested with each Microcks version below. You can add compatible versions as comma-separated values in each cell.
+| Distrib     | Version | Microcks version | Reporter               | Install method | Setup/Info |
+|-------------|---------|------------------|------------------------|----------------|------------|
+| OpenShift   | 4.12    | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Helm | [Link to setup](https://github.com/microcks/microcks/blob/master/install/kubernetes/README.md) |
+| GKE         | Dec 2024| 1.11.0           | [Raoul Quincempoix](https://github.com/raoul) | Operator | [Link to setup](https://microcks.io/documentation/guides/installation/kubernetes-operator/) |
+| AKS         |      |            |                      |       |       |
+| (add kubernetes distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
 
-| Dependency | Microcks 1.11.0 | Microcks 1.11.1 | Microcks 1.11.2 |
-|------------|-----------------|-----------------|-----------------|
-| MongoDB    |                 |                 |                 |
-| PostgreSQL |                 |                 |                 |
-| Kubernetes |                 |                 |                 |
-| Java       |                 |                 |                 |
-| Keycloak   |                 |                 |                 |
-| (add other dependency) |    |                 |                 |
+### Mongo distrib
 
-## Additional Integrations
+| Distrib           | Version     | Microcks version | Reporter               | Install method | Setup/Info |
+|-------------------|-------------|------------------|------------------------|----------------|------------|
+| MongoDB Atlas     | 2025-01-12  | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Cloud managed | M10 cluster |
+| MongoDB Community | 5.5.12      | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Helm chart Bitnami | Self-hosted |
+| (add mongo distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
 
-Please list any additional integrations you've tested with each Microcks version below. You can add compatible versions as comma-separated values in each cell.
+### Keycloak distrib
 
-| Integration | Microcks 1.11.0 | Microcks 1.11.1 | Microcks 1.11.2 |
-|-------------|-----------------|-----------------|-----------------|
-| (add integration name) |     |                 |                 |
-|             |                 |                 |                 |
-|             |                 |                 |                 |
+| Distrib     | Version | Microcks version | Reporter               | Install method | Setup/Info |
+|-------------|---------|------------------|------------------------|----------------|------------|
+| RH SSO      | 8.11    | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | RH SSO Operator | OpenShift deployment |
+| Keycloak    | 26.2.1  | 1.12.0           | [Raoul Quincempoix](https://github.com/raoul) | Helm | [Deploy guide](https://blog.devops.dev/deploy-keycloak-v24-to-k8s-cluster-with-helm-83e6714f2888) |
+| (add keycloak distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
+
+## Integrations
+
+### Backstage distrib
+
+| Distrib     | Version | Microcks version | Reporter | Setup/Info |
+|-------------|---------|------------------|----------|------------|
+| Backstage   |         |                  |          |            |
+| (add backstage version) | (version) | (microcks version) | (your name) | (setup details) |
+
+### Jenkins distrib
+
+| Distrib     | Version | Microcks version | Reporter | Setup/Info |
+|-------------|---------|------------------|----------|------------|
+| Jenkins     |         |                  |          |            |
+| (add jenkins version) | (version) | (microcks version) | (your name) | (setup details) |
 
 ## Legend
 
-- **UPI**: User Provisioned Infrastructure
-- **IPI**: Installer Provisioned Infrastructure
 - **Tested**: Successfully tested by community members
 - **Not Available**: Not supported or not tested
 - **Stable**: Current stable production release
@@ -86,6 +96,6 @@ This section documents known compatibility issues or special considerations:
 
 ## Last Updated
 
-This compatibility matrix was last updated on: 29/04/2025
+This compatibility matrix was last updated on: 05/05/2025
 
 Please submit a pull request to update this information if your tested configuration differs from what is documented here.
