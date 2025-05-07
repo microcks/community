@@ -223,7 +223,7 @@ $ gcloud sql instances describe <INSTANCE-NAME> \
 
 ## 6. Deploy Keycloak on GKE with Cloud SQL
 
-Follow the [Keycloak deployment guide for GCP GKE](https://github.com/microcks/community/blob/main/install/gcp/keycloak-installation.md) provided by the Microcks community.
+Follow the [Keycloak deployment guide for GCP GKE](https://github.com/microcks/community/blob/main/install/gcp/keycloak-installation.md#6-deploy-keycloak-on-gke-with-cloud-sql) provided by the Microcks community.
 
 Start from **Step 6** of the document and continue through the remaining steps to deploy Keycloak on your GKE cluster.
 
