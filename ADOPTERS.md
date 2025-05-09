@@ -44,7 +44,11 @@ This document also lists the organizations using Microcks based on public inform
 |[ Bump.sh](https://bump.sh/) | [Christophe Dujarric](https://www.linkedin.com/in/christophedujarric/) [Sebastien Charrier](https://www.linkedin.com/in/sebastiencharrier/)| `Service Provider` | Using Bump.sh and Microcks together allows you to create a clear feedback cycle of [API documentation](https://bump.sh/), testing, simulation, trial implementation, and iteration. [Read more about this](https://bump.sh/blog/microcks-bump-sh-testing-mocking-docs).|
 |[Michelin](https://www.michelin.fr/) | [Alex Picarle](https://github.com/AlexP63) | `End-User` | We use Microcks to elaborate our PoCs, to offer api sandbox or discovery trials and overall promote #DesignFirst approach.|
 <<<<<<< HEAD
+<<<<<<< HEAD
 |[Amway](https://www.amway.com/) | [Brian Hibma](https://www.linkedin.com/in/brianhibma/) [Sai Bommakanti](https://www.linkedin.com/in/saiabhinay-bommakanti-31014943/) | `end user` | We use Microcks primarily as a platform for API and Event mocking and discovery, integrating it into our DevOps and CI/CD practices, and unblocking parallel, contract-based development from teams. |
 =======
 |[Amway](https://www.amway.com/) | [Brian Hibma](https://www.linkedin.com/in/brianhibma/) [Sai Bommakanti](https://www.linkedin.com/in/saiabhinay-bommakanti-31014943/) | `End-User` | We use Microcks primarily as a platform for API and Event mocking and discovery, integrating it into our DevOps and CI/CD practices, and unblocking parallel, contract-based development from teams. |
 >>>>>>> a11ad20 (chore: update ADOPTERS.md from global .github repo (#77))
+=======
+|[Amway](https://www.amway.com/) | [Brian Hibma](https://www.linkedin.com/in/brianhibma/) [Sai Bommakanti](https://www.linkedin.com/in/saiabhinay-bommakanti-31014943/) | `end user` | We use Microcks primarily as a platform for API and Event mocking and discovery, integrating it into our DevOps and CI/CD practices, and unblocking parallel, contract-based development from teams. |
+>>>>>>> 92aa89b (chore: update ADOPTERS.md from global .github repo (#78))
