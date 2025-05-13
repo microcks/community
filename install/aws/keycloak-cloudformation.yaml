@@ -1,0 +1,461 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to deploy Keycloak on Amazon EKS with Aurora PostgreSQL and Helm via Lambda
+
+Parameters:
+  ClusterName:
+    Type: String
+    Default: keycloak-cluster
+    Description: Name of the EKS cluster
+  KubernetesVersion:
+    Type: String
+    Default: '1.30'
+    Description: Kubernetes version for EKS
+  NodeInstanceType:
+    Type: String
+    Default: t3.medium
+    Description: Instance type for EKS node group
+  NodeGroupName:
+    Type: String
+    Default: keycloak-nodes
+    Description: Name of the EKS node group
+  DesiredCapacity:
+    Type: Number
+    Default: 2
+    Description: Desired number of nodes
+  MinSize:
+    Type: Number
+    Default: 1
+    Description: Minimum number of nodes
+  MaxSize:
+    Type: Number
+    Default: 3
+    Description: Maximum number of nodes
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Comma-separated list of subnet IDs for EKS and Aurora
+  VpcSecurityGroupId:
+    Type: String
+    Description: Security group ID for the VPC
+  EngineVersion:
+    Type: String
+    Default: '15.5'
+    Description: Aurora PostgreSQL engine version
+  AuroraMasterUsername:
+    Type: String
+    Default: microcks
+    Description: Master username for Aurora PostgreSQL
+  AuroraMasterPassword:
+    Type: String
+    Default: microcks123
+    NoEcho: true
+    Description: Master password for Aurora PostgreSQL
+  KeycloakAdminUser:
+    Type: String
+    Default: admin
+    Description: Keycloak admin username
+  KeycloakAdminPassword:
+    Type: String
+    Default: microcks123
+    NoEcho: true
+    Description: Keycloak admin password
+  KeycloakDomain:
+    Type: String
+    Default: keycloak.example.com
+    Description: Custom domain for Keycloak (e.g., keycloak.your-domain.com)
+
+Resources:
+  # EKS Cluster Role
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+      Policies:
+        - PolicyName: KeycloakEKSFullAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - eks:*
+                  - iam:CreateRole
+                  - iam:AttachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:PassRole
+                  - iam:GetOpenIDConnectProvider
+                  - iam:CreateOpenIDConnectProvider
+                  - iam:GetRole
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - rds:CreateDBCluster
+                  - rds:CreateDBInstance
+                  - rds:CreateDBSubnetGroup
+                  - rds:DescribeDBClusters
+                  - rds:DescribeDBInstances
+                  - rds:ModifyDBCluster
+                  - rds:DeleteDBCluster
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeVpcs
+                Resource: '*'
+
+  # EKS Cluster
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      Version: !Ref KubernetesVersion
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds:
+          - !Ref VpcSecurityGroupId
+
+  # Node Instance Role
+  NodeInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+
+  # EKS Node Group
+  NodeGroup:
+    Type: AWS::EKS::Nodegroup
+    DependsOn: EKSCluster
+    Properties:
+      NodegroupName: !Ref NodeGroupName
+      ClusterName: !Ref ClusterName
+      NodeRole: !GetAtt NodeInstanceRole.Arn
+      Subnets: !Ref SubnetIds
+      ScalingConfig:
+        DesiredSize: !Ref DesiredCapacity
+        MinSize: !Ref MinSize
+        MaxSize: !Ref MaxSize
+      InstanceTypes:
+        - !Ref NodeInstanceType
+      AmiType: AL2_x86_64
+      DiskSize: 20
+
+  # Aurora Subnet Group
+  KeycloakDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Keycloak Aurora
+      SubnetIds: !Ref SubnetIds
+
+  # Aurora PostgreSQL Cluster
+  KeycloakDBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      DBClusterIdentifier: keycloak-db-cluster
+      Engine: aurora-postgresql
+      EngineVersion: !Ref EngineVersion
+      Port: 5432
+      MasterUsername: !Ref AuroraMasterUsername
+      MasterUserPassword: !Ref AuroraMasterPassword
+      DBSubnetGroupName: !Ref KeycloakDBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref VpcSecurityGroupId
+      ServerlessV2ScalingConfiguration:
+        MinCapacity: 0.5
+        MaxCapacity: 2
+      BackupRetentionPeriod: 7
+      EnableHttpEndpoint: true
+
+  # Aurora PostgreSQL Instance
+  KeycloakDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: keycloak-db-instance
+      DBClusterIdentifier: !Ref KeycloakDBCluster
+      Engine: aurora-postgresql
+      DBInstanceClass: db.serverless
+
+  # IAM Role for Aurora DB Setup Lambda
+  AuroraDBSetupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonRDSFullAccess
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+        - arn:aws:iam::aws:policy/AWSLambdaVPCAccessExecutionRole
+
+  # Lambda Function to Create Keycloak Database
+  AuroraDBSetupLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CreateKeycloakDB
+      Handler: index.handler
+      Runtime: python3.9
+      Role: !GetAtt AuroraDBSetupRole.Arn
+      Timeout: 300
+      VpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds:
+          - !Ref VpcSecurityGroupId
+      Environment:
+        Variables:
+          DB_HOST: !GetAtt KeycloakDBCluster.Endpoint.Address
+          DB_USER: !Ref AuroraMasterUsername
+          DB_PASS: !Ref AuroraMasterPassword
+      Code:
+        ZipFile: |
+          import psycopg2
+          import os
+
+          def handler(event, context):
+              try:
+                  conn = psycopg2.connect(
+                      host=os.environ['DB_HOST'],
+                      port=5432,
+                      user=os.environ['DB_USER'],
+                      password=os.environ['DB_PASS'],
+                      dbname='postgres'
+                  )
+                  conn.autocommit = True
+                  cur = conn.cursor()
+                  cur.execute("SELECT 1 FROM pg_database WHERE datname = 'keycloak_db'")
+                  if not cur.fetchone():
+                      cur.execute("CREATE DATABASE keycloak_db")
+                      print("Database 'keycloak_db' created.")
+                  else:
+                      print("Database 'keycloak_db' already exists.")
+                  cur.close()
+                  conn.close()
+                  return { "status": "Success" }
+              except Exception as e:
+                  print(f"Error: {e}")
+                  raise
+
+  # Trigger for Aurora DB Setup Lambda
+  AuroraDBSetupTrigger:
+    Type: Custom::CreateKeycloakDB
+    DependsOn: KeycloakDBInstance
+    Properties:
+      ServiceToken: !GetAtt AuroraDBSetupLambda.Arn
+
+  # IAM Role for Keycloak Deployment Lambda
+  KeycloakDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSLambdaVPCAccessExecutionRole
+
+  # Lambda Function to Deploy Keycloak
+  KeycloakDeploymentLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: DeployKeycloak
+      Handler: index.handler
+      Runtime: python3.9
+      Timeout: 900
+      Role: !GetAtt KeycloakDeploymentRole.Arn
+      VpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds:
+          - !Ref VpcSecurityGroupId
+      Environment:
+        Variables:
+          CLUSTER_NAME: !Ref ClusterName
+          REGION: !Ref AWS::Region
+          DB_HOST: !GetAtt KeycloakDBCluster.Endpoint.Address
+          DB_USER: !Ref AuroraMasterUsername
+          DB_PASS: !Ref AuroraMasterPassword
+          ADMIN_USER: !Ref KeycloakAdminUser
+          ADMIN_PASS: !Ref KeycloakAdminPassword
+          KEYCLOAK_DOMAIN: !Ref KeycloakDomain
+      Code:
+        ZipFile: |
+          import subprocess
+          import os
+          import json
+
+          def handler(event, context):
+              try:
+                  cluster_name = os.environ["CLUSTER_NAME"]
+                  region = os.environ["REGION"]
+                  db_host = os.environ["DB_HOST"]
+                  db_user = os.environ["DB_USER"]
+                  db_pass = os.environ["DB_PASS"]
+                  admin_user = os.environ["ADMIN_USER"]
+                  admin_pass = os.environ["ADMIN_PASS"]
+                  keycloak_domain = os.environ["KEYCLOAK_DOMAIN"]
+
+                  # Update kubeconfig
+                  subprocess.run(["aws", "eks", "update-kubeconfig", "--name", cluster_name, "--region", region], check=True)
+
+                  # Create namespace
+                  subprocess.run(["kubectl", "create", "namespace", "microcks"], check=True, capture_output=True)
+
+                  # Install NGINX Ingress Controller
+                  subprocess.run(["helm", "repo", "add", "ingress-nginx", "https://kubernetes.github.io/ingress-nginx"], check=True)
+                  subprocess.run(["helm", "repo", "update"], check=True)
+                  subprocess.run([
+                      "helm", "install", "ingress-nginx", "ingress-nginx/ingress-nginx",
+                      "--namespace", "ingress-nginx", "--create-namespace",
+                      "--set", "controller.service.type=LoadBalancer",
+                      "--set", "controller.config.proxy-buffer-size=128k"
+                  ], check=True)
+
+                  # Install cert-manager
+                  subprocess.run(["helm", "repo", "add", "jetstack", "https://charts.jetstack.io"], check=True)
+                  subprocess.run(["helm", "repo", "update"], check=True)
+                  subprocess.run([
+                      "helm", "install", "cert-manager", "jetstack/cert-manager",
+                      "--namespace", "cert-manager", "--create-namespace",
+                      "--set", "installCRDs=true"
+                  ], check=True)
+
+                  # Create ClusterIssuer for Let's Encrypt
+                  cluster_issuer = f"""
+                  apiVersion: cert-manager.io/v1
+                  kind: ClusterIssuer
+                  metadata:
+                    name: letsencrypt-prod
+                  spec:
+                    acme:
+                      server: https://acme-v02.api.letsencrypt.org/directory
+                      email: admin@{keycloak_domain}
+                      privateKeySecretRef:
+                        name: letsencrypt-prod
+                      solvers:
+                      - http01:
+                          ingress:
+                            class: nginx
+                  """
+                  with open("/tmp/cluster-issuer.yaml", "w") as f:
+                      f.write(cluster_issuer)
+                  subprocess.run(["kubectl", "apply", "-f", "/tmp/cluster-issuer.yaml"], check=True)
+
+                  # Create Keycloak Helm values file
+                  keycloak_values = f"""
+                  auth:
+                    adminUser: {admin_user}
+                    adminPassword: "{admin_pass}"
+                  postgresql:
+                    enabled: false
+                  externalDatabase:
+                    host: "{db_host}"
+                    port: 5432
+                    database: "keycloak_db"
+                    user: "{db_user}"
+                    password: "{db_pass}"
+                    scheme: "postgresql"
+                  service:
+                    type: ClusterIP
+                    ports:
+                      http: 80
+                  resources:
+                    requests:
+                      cpu: "500m"
+                      memory: "512Mi"
+                    limits:
+                      cpu: "1"
+                      memory: "1Gi"
+                  persistence:
+                    enabled: true
+                    storageClass: "gp2"
+                    accessModes:
+                      - ReadWriteOnce
+                    size: 8Gi
+                  ingress:
+                    enabled: true
+                    ingressClassName: nginx
+                    hostname: {keycloak_domain}
+                    annotations:
+                      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+                      cert-manager.io/cluster-issuer: letsencrypt-prod
+                    tls: true
+                  """
+                  with open("/tmp/keycloak.yaml", "w") as f:
+                      f.write(keycloak_values)
+
+                  # Install Keycloak
+                  subprocess.run(["helm", "repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"], check=True)
+                  subprocess.run(["helm", "repo", "update"], check=True)
+                  subprocess.run([
+                      "helm", "install", "keycloak", "bitnami/keycloak",
+                      "-n", "microcks", "-f", "/tmp/keycloak.yaml"
+                  ], check=True)
+
+                  # Get Ingress IP
+                  ingress_ip = subprocess.run([
+                      "kubectl", "get", "svc", "-n", "ingress-nginx", "ingress-nginx-controller",
+                      "-o", "jsonpath={.status.loadBalancer.ingress[0].hostname}"
+                  ], capture_output=True, text=True).stdout.strip()
+                  if not ingress_ip:
+                      raise Exception("Ingress IP not available")
+
+                  return {
+                      "status": "Keycloak deployed",
+                      "ingress_ip": ingress_ip,
+                      "keycloak_url": f"https://{keycloak_domain}"
+                  }
+              except Exception as e:
+                  print(f"Error: {e}")
+                  raise
+
+  # Trigger for Keycloak Deployment Lambda
+  KeycloakDeploymentTrigger:
+    Type: Custom::KeycloakDeployment
+    DependsOn:
+      - AuroraDBSetupTrigger
+      - KeycloakDeploymentLambda
+    Properties:
+      ServiceToken: !GetAtt KeycloakDeploymentLambda.Arn
+
+Outputs:
+  EKSClusterName:
+    Description: Name of the EKS cluster
+    Value: !Ref ClusterName
+  EKSClusterEndpoint:
+    Description: Endpoint of the EKS cluster
+    Value: !GetAtt EKSCluster.Endpoint
+  AuroraEndpoint:
+    Description: Endpoint of the Aurora PostgreSQL cluster
+    Value: !GetAtt KeycloakDBCluster.Endpoint.Address
+  KeycloakURL:
+    Description: URL to access Keycloak
+    Value: !Sub https://${KeycloakDomain}
+---
