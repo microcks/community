@@ -321,7 +321,7 @@ kubectl get pods -n microcks
 ```sh
 kubectl get ingress -n microcks
 ```
-Microcks is available at: `https://microcks.YOUR-DOMAIN.com`
+Microcks is available at: `https://microcks.YOUR-DOMAIN.com` 
 gRPC mock service is available at: `https://microcks-grpc.YOUR-DOMAIN.com`
 
 🎉 Congratulations! You have successfully deployed Microcks on EKS. Now, you can start using Microcks to mock and test your APIs seamlessly in your cloud environment.
