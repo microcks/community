@@ -64,7 +64,7 @@ oci ce cluster create \
 ```
 - Replace `<COMPARTMENT_OCID>` with your compartment ID.
 - Replace `<CLUSTER_NAME>` with a name (e.g., `keycloak-cluster`).
-- Replace `<K8S_VERSION>` with a supported Kubernetes version (e.g., `v1.28.2` – check availability in your region).
+- Replace `<K8S_VERSION>` with a supported Kubernetes version (e.g., `v1.33.1` – check availability in your region).
 - Replace `<VCN_OCID>` with your VCN’s OCID.
 
 ### Step 2: Create Node Pool
@@ -119,8 +119,6 @@ Use the OCI Console or CLI to create a PostgreSQL database instance. For simplic
     - **Storage**: Set storage size (e.g., 50 GB).
     - **Networking**: Select your VCN and subnet.
     - **Administrator Credentials**: Set a username (e.g., `admin`) and password.
-
-
 
 6. Click Create.
 
