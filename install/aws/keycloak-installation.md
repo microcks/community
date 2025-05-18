@@ -22,7 +22,7 @@ Ensure the following tools are installed on your local system:
 ```sh
 aws configure
 ```
-Enter your Access Key, Secret Key, region (e.g., us-east-1),
+Enter your Access Key, Secret Key, region (e.g., us-east-1).
 
 ## 2. Create IAM Role for EKS and ECR Access
 ### IAM Policy JSON
@@ -203,8 +203,8 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 ```
 External-IP is your's INGRESS_IP.
 If you don't have a custom domain, you can use a free domain by using nip.io for your domain names, such as:
-- keycloak.<INGRESS_IP>.nip.io
-- microcks.<INGRESS_IP>.nip.io
+- `keycloak.<INGRESS_IP>.nip.io`
+- `microcks.<INGRESS_IP>.nip.io`
 
 ### Install cert-manager for SSL Certificates
 ```sh
@@ -320,11 +320,11 @@ EOF
 
 ### Custom Domain
 1. If You Have a Custom Domain Create and A record in your DNS provider to point your domain/subdomain to the INGRESS IP. For example:
-- keycloak.YOUR-DOMAIN.com pointing to <INGRESS_IP>
-- microcks.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+- `keycloak.YOUR-DOMAIN.com` pointing to `<INGRESS_IP>`
+- `microcks.YOUR-DOMAIN.com` pointing to `<INGRESS_IP>`
 2. If you don't have a custom domain, you can use a free domain by using nip.io for your domain names, such as:
-- keycloak.<INGRESS_IP>.nip.io
-- microcks.<INGRESS_IP>.nip.io
+- `keycloak.<INGRESS_IP>.nip.io`
+- `microcks.<INGRESS_IP>.nip.io`
 
 ### Install Keycloak and check Pod Status
 ```sh
