@@ -120,6 +120,7 @@ Use the OCI Console or CLI to create a PostgreSQL database instance. For simplic
     - **Networking**: Select your VCN and subnet.
     - **Administrator Credentials**: Set a username (e.g., `admin`) and password.
 
+
 6. Click Create.
 
 Wait for the DB System to provision (this may take 10-15 minutes). Note the endpoint (e.g., `10.0.1.x`) from the OCI Console.
