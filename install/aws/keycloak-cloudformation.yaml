@@ -1,24 +1,23 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Deploy Microcks on Amazon EKS with Aurora PostgreSQL and DocumentDB, using Helm via Lambda.
+Description: CloudFormation template to deploy Keycloak on Amazon EKS with Aurora PostgreSQL and Helm via Lambda
 
 Parameters:
   ClusterName:
     Type: String
-    Default: microcks-cluster
+    Default: keycloak-cluster
     Description: Name of the EKS cluster
   KubernetesVersion:
     Type: String
-    Default: '1.32'
-    Description: Kubernetes version for EKS (e.g., 1.30, 1.31). Verify supported versions with AWS EKS documentation.
+    Default: '1.30'
+    Description: Kubernetes version for EKS
   NodeInstanceType:
     Type: String
     Default: t3.medium
     Description: Instance type for EKS node group
-    AllowedValues: [t3.medium, t3.large, m5.large, m5.xlarge]
   NodeGroupName:
     Type: String
-    Default: microcks-nodes
+    Default: keycloak-nodes
     Description: Name of the EKS node group
   DesiredCapacity:
     Type: Number
@@ -34,21 +33,14 @@ Parameters:
     Description: Maximum number of nodes
   SubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-    Description: Subnet IDs for EKS and Aurora. Must have internet access (public or NAT Gateway) for Lambda.
-  DocDBSubnetIds:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: Subnet IDs for DocumentDB
-  AuroraEngineVersion:
-    Type: String
-    Default: '15.5'
-    Description: Aurora PostgreSQL engine version (e.g., 15.5). Verify with AWS RDS documentation.
-  DocDBEngineVersion:
-    Type: String
-    Default: '5.0'
-    Description: DocumentDB engine version (e.g., 5.0). Verify with AWS DocumentDB documentation.
+    Description: Comma-separated list of subnet IDs for EKS and Aurora
   VpcSecurityGroupId:
     Type: String
-    Description: Security group ID for the VPC, allowing 5432 (Aurora), 27017 (DocumentDB), and 80/443 (EKS)
+    Description: Security group ID for the VPC
+  EngineVersion:
+    Type: String
+    Default: '15.5'
+    Description: Aurora PostgreSQL engine version
   AuroraMasterUsername:
     Type: String
     Default: microcks
@@ -58,19 +50,19 @@ Parameters:
     Default: microcks123
     NoEcho: true
     Description: Master password for Aurora PostgreSQL
-  DocDBMasterUsername:
+  KeycloakAdminUser:
     Type: String
-    Default: microcks
-    Description: Master username for DocumentDB
-  DocDBMasterPassword:
+    Default: admin
+    Description: Keycloak admin username
+  KeycloakAdminPassword:
     Type: String
     Default: microcks123
     NoEcho: true
-    Description: Master password for DocumentDB
-  MicrocksDomain:
+    Description: Keycloak admin password
+  KeycloakDomain:
     Type: String
-    Default: microcks.example.com
-    Description: Domain for Microcks (e.g., microcks.your-domain.com or microcks.<INGRESS_IP>.nip.io)
+    Default: keycloak.example.com
+    Description: Custom domain for Keycloak (e.g., keycloak.your-domain.com)
 
 Resources:
   # EKS Cluster Role
@@ -86,6 +78,36 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+      Policies:
+        - PolicyName: KeycloakEKSFullAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - eks:*
+                  - iam:CreateRole
+                  - iam:AttachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:PassRole
+                  - iam:GetOpenIDConnectProvider
+                  - iam:CreateOpenIDConnectProvider
+                  - iam:GetRole
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - rds:CreateDBCluster
+                  - rds:CreateDBInstance
+                  - rds:CreateDBSubnetGroup
+                  - rds:DescribeDBClusters
+                  - rds:DescribeDBInstances
+                  - rds:ModifyDBCluster
+                  - rds:DeleteDBCluster
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeVpcs
+                Resource: '*'
 
   # EKS Cluster
   EKSCluster:
@@ -97,7 +119,7 @@ Resources:
       ResourcesVpcConfig:
         SubnetIds: !Ref SubnetIds
         SecurityGroupIds:
- - !Ref VpcSecurityGroupId
+          - !Ref VpcSecurityGroupId
 
   # Node Instance Role
   NodeInstanceRole:
@@ -134,23 +156,23 @@ Resources:
       DiskSize: 20
 
   # Aurora Subnet Group
-  MicrocksDBSubnetGroup:
+  KeycloakDBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: Subnet group for Microcks Aurora
+      DBSubnetGroupDescription: Subnet group for Keycloak Aurora
       SubnetIds: !Ref SubnetIds
 
   # Aurora PostgreSQL Cluster
-  MicrocksDBCluster:
+  KeycloakDBCluster:
     Type: AWS::RDS::DBCluster
     Properties:
-      DBClusterIdentifier: microcks-db-cluster
+      DBClusterIdentifier: keycloak-db-cluster
       Engine: aurora-postgresql
-      EngineVersion: !Ref AuroraEngineVersion
+      EngineVersion: !Ref EngineVersion
       Port: 5432
       MasterUsername: !Ref AuroraMasterUsername
       MasterUserPassword: !Ref AuroraMasterPassword
-      DBSubnetGroupName: !Ref MicrocksDBSubnetGroup
+      DBSubnetGroupName: !Ref KeycloakDBSubnetGroup
       VpcSecurityGroupIds:
         - !Ref VpcSecurityGroupId
       ServerlessV2ScalingConfiguration:
@@ -158,14 +180,13 @@ Resources:
         MaxCapacity: 2
       BackupRetentionPeriod: 7
       EnableHttpEndpoint: true
-      DeletionProtection: true
 
   # Aurora PostgreSQL Instance
-  MicrocksDBInstance:
+  KeycloakDBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: microcks-db-instance
-      DBClusterIdentifier: !Ref MicrocksDBCluster
+      DBInstanceIdentifier: keycloak-db-instance
+      DBClusterIdentifier: !Ref KeycloakDBCluster
       Engine: aurora-postgresql
       DBInstanceClass: db.serverless
 
@@ -186,11 +207,11 @@ Resources:
         - arn:aws:iam::aws:policy/SecretsManagerReadWrite
         - arn:aws:iam::aws:policy/AWSLambdaVPCAccessExecutionRole
 
-  # Lambda Function to Create Microcks Database
+  # Lambda Function to Create Keycloak Database
   AuroraDBSetupLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: CreateMicrocksDB
+      FunctionName: CreateKeycloakDB
       Handler: index.handler
       Runtime: python3.9
       Role: !GetAtt AuroraDBSetupRole.Arn
@@ -201,14 +222,13 @@ Resources:
           - !Ref VpcSecurityGroupId
       Environment:
         Variables:
-          DB_HOST: !GetAtt MicrocksDBCluster.Endpoint.Address
+          DB_HOST: !GetAtt KeycloakDBCluster.Endpoint.Address
           DB_USER: !Ref AuroraMasterUsername
           DB_PASS: !Ref AuroraMasterPassword
       Code:
         ZipFile: |
           import psycopg2
           import os
-          import json
 
           def handler(event, context):
               try:
@@ -221,59 +241,28 @@ Resources:
                   )
                   conn.autocommit = True
                   cur = conn.cursor()
-                  cur.execute("SELECT 1 FROM pg_database WHERE datname = 'microcks_db'")
+                  cur.execute("SELECT 1 FROM pg_database WHERE datname = 'keycloak_db'")
                   if not cur.fetchone():
-                      cur.execute("CREATE DATABASE microcks_db")
-                      print("Database 'microcks_db' created.")
+                      cur.execute("CREATE DATABASE keycloak_db")
+                      print("Database 'keycloak_db' created.")
                   else:
-                      print("Database 'microcks_db' already exists.")
+                      print("Database 'keycloak_db' already exists.")
                   cur.close()
                   conn.close()
-                  return {"status": "Success"}
+                  return { "status": "Success" }
               except Exception as e:
                   print(f"Error: {e}")
-                  return {"status": "Failure", "error": str(e)}
+                  raise
 
   # Trigger for Aurora DB Setup Lambda
   AuroraDBSetupTrigger:
-    Type: Custom::CreateMicrocksDB
-    DependsOn: MicrocksDBInstance
+    Type: Custom::CreateKeycloakDB
+    DependsOn: KeycloakDBInstance
     Properties:
       ServiceToken: !GetAtt AuroraDBSetupLambda.Arn
 
-  # DocumentDB Subnet Group
-  MicrocksDocDBSubnetGroup:
-    Type: AWS::DocDB::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: Subnet group for Microcks DocumentDB
-      SubnetIds: !Ref DocDBSubnetIds
-
-  # DocumentDB Cluster
-  MicrocksDocDBCluster:
-    Type: AWS::DocDB::DBCluster
-    Properties:
-      DBClusterIdentifier: microcks-docdb-cluster
-      EngineVersion: !Ref DocDBEngineVersion
-      MasterUsername: !Ref DocDBMasterUsername
-      MasterUserPassword: !Ref DocDBMasterPassword
-      DBSubnetGroupName: !Ref MicrocksDocDBSubnetGroup
-      VpcSecurityGroupIds:
-        - !Ref VpcSecurityGroupId
-      DeletionProtection: true
-
-  # DocumentDB Instance
-  MicrocksDocDBInstance:
-    Type: AWS::DocDB::DBInstance
-    DependsOn:
-      - MicrocksDocDBCluster
-      - MicrocksDocDBSubnetGroup
-    Properties:
-      DBInstanceIdentifier: microcks-docdb-instance
-      DBClusterIdentifier: !Ref MicrocksDocDBCluster
-      DBInstanceClass: db.t3.medium
-
-  # IAM Role for Microcks Deployment Lambda
-  MicrocksDeploymentRole:
+  # IAM Role for Keycloak Deployment Lambda
+  KeycloakDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -292,27 +281,16 @@ Resources:
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSLambdaVPCAccessExecutionRole
-      Policies:
-        - PolicyName: EKSKubeAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - eks:DescribeCluster
-                  - eks:AccessKubernetesApi
-                  - eks:UpdateClusterConfig
-                Resource: !Sub arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ClusterName}
 
-  # Lambda Function to Deploy Microcks
-  MicrocksDeploymentLambda:
+  # Lambda Function to Deploy Keycloak
+  KeycloakDeploymentLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: DeployMicrocks
+      FunctionName: DeployKeycloak
       Handler: index.handler
       Runtime: python3.9
       Timeout: 900
-      Role: !GetAtt MicrocksDeploymentRole.Arn
+      Role: !GetAtt KeycloakDeploymentRole.Arn
       VpcConfig:
         SubnetIds: !Ref SubnetIds
         SecurityGroupIds:
@@ -321,8 +299,12 @@ Resources:
         Variables:
           CLUSTER_NAME: !Ref ClusterName
           REGION: !Ref AWS::Region
-          MONGODB_URI: !Sub mongodb://${DocDBMasterUsername}:${DocDBMasterPassword}@${MicrocksDocDBCluster.Endpoint}:27017/microcks
-          MICROCKS_DOMAIN: !Ref MicrocksDomain
+          DB_HOST: !GetAtt KeycloakDBCluster.Endpoint.Address
+          DB_USER: !Ref AuroraMasterUsername
+          DB_PASS: !Ref AuroraMasterPassword
+          ADMIN_USER: !Ref KeycloakAdminUser
+          ADMIN_PASS: !Ref KeycloakAdminPassword
+          KEYCLOAK_DOMAIN: !Ref KeycloakDomain
       Code:
         ZipFile: |
           import subprocess
@@ -333,8 +315,12 @@ Resources:
               try:
                   cluster_name = os.environ["CLUSTER_NAME"]
                   region = os.environ["REGION"]
-                  mongo_uri = os.environ["MONGODB_URI"]
-                  microcks_domain = os.environ["MICROCKS_DOMAIN"]
+                  db_host = os.environ["DB_HOST"]
+                  db_user = os.environ["DB_USER"]
+                  db_pass = os.environ["DB_PASS"]
+                  admin_user = os.environ["ADMIN_USER"]
+                  admin_pass = os.environ["ADMIN_PASS"]
+                  keycloak_domain = os.environ["KEYCLOAK_DOMAIN"]
 
                   # Update kubeconfig
                   subprocess.run(["aws", "eks", "update-kubeconfig", "--name", cluster_name, "--region", region], check=True)
@@ -370,7 +356,7 @@ Resources:
                   spec:
                     acme:
                       server: https://acme-v02.api.letsencrypt.org/directory
-                      email: admin@{microcks_domain}
+                      email: admin@{keycloak_domain}
                       privateKeySecretRef:
                         name: letsencrypt-prod
                       solvers:
@@ -382,56 +368,55 @@ Resources:
                       f.write(cluster_issuer)
                   subprocess.run(["kubectl", "apply", "-f", "/tmp/cluster-issuer.yaml"], check=True)
 
-                  # Create Kubernetes secret for MongoDB
-                  subprocess.run([
-                      "kubectl", "create", "secret", "generic", "microcks-mongodb-connection",
-                      "-n", "microcks",
-                      "--from-literal=username=microcks",
-                      "--from-literal=password=microcks123"
-                  ], check=True)
-
-                  # Create Microcks Helm values file
-                  microcks_values = f"""
-                  appName: microcks
-                  microcks:
-                    url: https://{microcks_domain}
-                    env:
-                      - name: SPRING_DATA_MONGODB_URI
-                        value: "{mongo_uri}"
-                  keycloak:
+                  # Create Keycloak Helm values file
+                  keycloak_values = f"""
+                  auth:
+                    adminUser: {admin_user}
+                    adminPassword: "{admin_pass}"
+                  postgresql:
+                    enabled: false
+                  externalDatabase:
+                    host: "{db_host}"
+                    port: 5432
+                    database: "keycloak_db"
+                    user: "{db_user}"
+                    password: "{db_pass}"
+                    scheme: "postgresql"
+                  service:
+                    type: ClusterIP
+                    ports:
+                      http: 80
+                  resources:
+                    requests:
+                      cpu: "500m"
+                      memory: "512Mi"
+                    limits:
+                      cpu: "1"
+                      memory: "1Gi"
+                  persistence:
                     enabled: true
-                    install: false
-                    url: https://keycloak.{microcks_domain}
-                    privateUrl: https://keycloak.{microcks_domain}
-                    realm: microcks
-                    client:
-                      id: microcks
-                      secret: dummy-secret
-                  mongodb:
-                    install: false
-                    database: microcks
-                    secretRef:
-                      secret: microcks-mongodb-connection
-                      usernameKey: username
-                      passwordKey: password
+                    storageClass: "gp2"
+                    accessModes:
+                      - ReadWriteOnce
+                    size: 8Gi
                   ingress:
                     enabled: true
                     ingressClassName: nginx
-                    hostname: {microcks_domain}
+                    hostname: {keycloak_domain}
                     annotations:
                       nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
                       cert-manager.io/cluster-issuer: letsencrypt-prod
                     tls: true
                   """
-                  with open("/tmp/microcks.yaml", "w") as f:
-                      f.write(microcks_values)
+                  with open("/tmp/keycloak.yaml", "w") as f:
+                      f.write(keycloak_values)
 
-                  # Install Microcks
-                  subprocess.run(["helm", "repo", "add", "microcks", "https://microcks.io/helm/"], check=True)
+                  # Install Keycloak
+                  subprocess.run(["helm", "repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"], check=True)
                   subprocess.run(["helm", "repo", "update"], check=True)
                   subprocess.run([
-                      "helm", "install", "microcks", "microcks/microcks",
-                      "-n", "microcks", "--create-namespace", "-f", "/tmp/microcks.yaml"
+                      "helm", "install", "keycloak", "bitnami/keycloak",
+                      "-n", "microcks", "-f", "/tmp/keycloak.yaml"
                   ], check=True)
 
                   # Get Ingress IP
@@ -443,24 +428,22 @@ Resources:
                       raise Exception("Ingress IP not available")
 
                   return {
-                      "status": "Microcks deployed",
+                      "status": "Keycloak deployed",
                       "ingress_ip": ingress_ip,
-                      "microcks_url": f"https://{microcks_domain}"
+                      "keycloak_url": f"https://{keycloak_domain}"
                   }
               except Exception as e:
                   print(f"Error: {e}")
-                  return {"status": "Failure", "error": str(e)}
+                  raise
 
-  # Trigger for Microcks Deployment Lambda
-  MicrocksDeploymentTrigger:
-    Type: Custom::MicrocksDeployment
+  # Trigger for Keycloak Deployment Lambda
+  KeycloakDeploymentTrigger:
+    Type: Custom::KeycloakDeployment
     DependsOn:
-      - MicrocksDeploymentLambda
       - AuroraDBSetupTrigger
-      - NodeGroup
-      - MicrocksDocDBInstance
+      - KeycloakDeploymentLambda
     Properties:
-      ServiceToken: !GetAtt MicrocksDeploymentLambda.Arn
+      ServiceToken: !GetAtt KeycloakDeploymentLambda.Arn
 
 Outputs:
   EKSClusterName:
@@ -471,11 +454,8 @@ Outputs:
     Value: !GetAtt EKSCluster.Endpoint
   AuroraEndpoint:
     Description: Endpoint of the Aurora PostgreSQL cluster
-    Value: !GetAtt MicrocksDBCluster.Endpoint.Address
-  DocumentDBEndpoint:
-    Description: Endpoint of the DocumentDB cluster
-    Value: !GetAtt MicrocksDocDBCluster.Endpoint
-  MicrocksURL:
-    Description: URL to access Microcks
-    Value: !Sub https://${MicrocksDomain}
+    Value: !GetAtt KeycloakDBCluster.Endpoint.Address
+  KeycloakURL:
+    Description: URL to access Keycloak
+    Value: !Sub https://${KeycloakDomain}
 ---
