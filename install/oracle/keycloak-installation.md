@@ -1,11 +1,7 @@
 # Deploying Keycloak on Oracle Kubernetes Engine (OKE)
 
 ## Overview
-<<<<<<< HEAD
 This guide walks you through deploying **Keycloak** on **Oracle Container Engine for Kubernetes (OKE)** using an **Oracle PostgreSQL Database Service** instance as the database. Keycloak is an open-source identity and access management solution that enables secure authentication and authorization for applications.
-=======
-This guide walks you through deploying **Keycloak** on **Oracle Container Engine for Kubernetes (OKE)** using an **Oracle MySQL Database Service** instance as the database. Keycloak is an open-source identity and access management solution that enables secure authentication and authorization for applications.
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 
 ---
 
@@ -18,11 +14,7 @@ Ensure the following tools are installed on your local system:
 3. **Helm:** [Install Guide](https://helm.sh/docs/intro/install/)
 4. **Optional: jq (for JSON parsing):** [Install Guide](https://stedolan.github.io/jq/)
 
-<<<<<<< HEAD
 Additionally, ensure you have a Virtual Cloud Network (VCN) set up in OCI with public and private subnets. The OKE cluster should be deployed in public subnets for the ingress controller to work properly, and the PostgreSQL DB System should be in a subnet accessible from the OKE cluster (e.g., within the same VCN).
-=======
-Additionally, ensure you have a Virtual Cloud Network (VCN) set up in OCI with public and private subnets. The OKE cluster should be deployed in public subnets for the ingress controller to work properly, and the MySQL DB System should be in a subnet accessible from the OKE cluster (e.g., within the same VCN).
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 
 ---
 
@@ -41,20 +33,12 @@ Follow the prompts to enter your:
 This creates a configuration file (typically at `~/.oci/config`) that allows you to interact with OCI services.
 
 ## 2. Create Necessary Permissions
-<<<<<<< HEAD
 Create a policy in OCI Identity and Access Management (IAM) to grant permissions for managing OKE clusters, PostgreSQL Database Service, networking, and load balancers. Example policy:
-=======
-Create a policy in OCI Identity and Access Management (IAM) to grant permissions for managing OKE clusters, MySQL Database Service, networking, and load balancers. Example policy:
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 ```json
 {
   "statements": [
     "Allow group Administrators to manage container-engine in tenancy",
-<<<<<<< HEAD
     "Allow group Administrators to manage autonomous-database-family in tenancy",
-=======
-    "Allow group Administrators to manage mysql-family in tenancy",
->>>>>>> fa7cd46 (keycloak installation added for oracle)
     "Allow group Administrators to manage virtual-network-family in tenancy",
     "Allow group Administrators to manage load-balancers in tenancy"
   ]
@@ -80,11 +64,7 @@ oci ce cluster create \
 ```
 - Replace `<COMPARTMENT_OCID>` with your compartment ID.
 - Replace `<CLUSTER_NAME>` with a name (e.g., `keycloak-cluster`).
-<<<<<<< HEAD
 - Replace `<K8S_VERSION>` with a supported Kubernetes version (e.g., `v1.33.1` – check availability in your region).
-=======
-- Replace `<K8S_VERSION>` with a supported Kubernetes version (e.g., `v1.28.2` – check availability in your region).
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 - Replace `<VCN_OCID>` with your VCN’s OCID.
 
 ### Step 2: Create Node Pool
@@ -126,7 +106,6 @@ kubectl get nodes
 ```
 You should see your nodes listed with a status of `Ready`.
 
-<<<<<<< HEAD
 ## 4. Set Up Oracle Database Service for PostgreSQL for Keycloak
 ### Step 1: Create a PostgreSQL Database Instance
 Use the OCI Console or CLI to create a PostgreSQL database instance. For simplicity, use the Console steps:
@@ -149,31 +128,6 @@ Wait for the DB System to provision (this may take 10-15 minutes). Note the endp
 Connect to the PostgreSQL DB System using a PostgreSQL client (e.g., from a compute instance in the same VCN or via a bastion host):
 ```sh
 psql -h <POSTGRES_ENDPOINT> -U <ADMIN_USERNAME> -d postgres
-=======
-## 4. Set Up Oracle MySQL Database (PostgreSQL compatible) Service
-### Step 1: Create MySQL DB System
-```sh
-oci mysql db-system create \
-  --compartment-id <COMPARTMENT_OCID> \
-  --shape-name <SHAPE> \
-  --admin-username <ADMIN_USERNAME> \
-  --admin-password <ADMIN_PASSWORD> \
-  --subnet-id <SUBNET_OCID> \
-  --display-name <DISPLAY_NAME>
-```
-
-- Replace `<SHAPE>` with a shape (e.g., `MySQL.VM.Standard.E4.1.8GB`).
-- Replace `<ADMIN_USERNAME>` and `<ADMIN_PASSWORD>` with your admin credentials (e.g., `admin` and a strong password).
-- Replace `<SUBNET_OCID>` with a subnet OCID from your VCN.
-- Replace `<DISPLAY_NAME>` with a name (e.g., `keycloak-mysql`).
-
-Wait for the DB System to provision (this may take 10-15 minutes). Note the endpoint (e.g., `10.0.1.x`) from the OCI Console under **MySQL > DB Systems**.
-
-### Step 2: Create Database for Keycloak
-Connect to the MySQL DB System using a MySQL client (e.g., from a compute instance in the same VCN or via a bastion host):
-```sh
-mysql -h <MYSQL_ENDPOINT> -u <ADMIN_USERNAME> -p
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 ```
 Run the following SQL commands to create a database and user for Keycloak:
 ```sh
@@ -183,11 +137,7 @@ GRANT ALL PRIVILEGES ON keycloak_db.* TO 'keycloak_user'@'%';
 FLUSH PRIVILEGES;
 ```
 
-<<<<<<< HEAD
 - Replace `<POSTGRES_ENDPOINT>` with the DB System’s endpoint.
-=======
-- Replace `<MYSQL_ENDPOINT>` with the DB System’s endpoint.
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 - Use the admin password when prompted.
 
 ## 5. Deploy Keycloak on OKE
@@ -296,20 +246,12 @@ postgresql:
   enabled: false
 
 externalDatabase:
-<<<<<<< HEAD
   host: "<POSTGRES_ENDPOINT>"    # Replace with your POSTGRES DB System endpoint
-=======
-  host: "<MYSQL_ENDPOINT>"    # Replace with your MySQL DB System endpoint
->>>>>>> fa7cd46 (keycloak installation added for oracle)
   port: 5432
   database: "keycloak_db"
   user: "microcks"
   password: "microcks123"
-<<<<<<< HEAD
   scheme: "postgres"
-=======
-  scheme: "mysql"
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 
 service:
   type: ClusterIP
@@ -342,11 +284,7 @@ ingress:
 
 EOF
 ```
-<<<<<<< HEAD
 - Replace `<POSTGRES_ENDPOINT>` with your POSTGRE SQL DB System’s endpoint.
-=======
-- Replace `<MYSQL_ENDPOINT>` with your MySQL DB System’s endpoint.
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 - Update the `hostname` with your domain or `nip.io` address.
 - Use Kuberenetes Secrets for variables like `adminUser`, `adminPassword`, `database`, `user`, `password` in production deployment to ensure security.
 - Ensure persistence is enabled to retain Keycloak data across pod restarts. The `persistence` block in your values file handles this by provisioning a PersistentVolumeClaim.
@@ -408,11 +346,7 @@ Organizing your files this way improves maintainability and clarity for other co
 - Click `Add User` and enter a `Username`, `Email` and Click `Save`.
 - Go to the `Credentials` tab, set a `password`, and save it.
 
-<<<<<<< HEAD
 🎉 Congratulations! You have successfully deployed Keycloak on Oracle Container Engine for Kubernetes (OKE) with Oracle PostgreSQL Database Service.
-=======
-🎉 Congratulations! You have successfully deployed Keycloak on Oracle Container Engine for Kubernetes (OKE) with Oracle MySQL Database Service.
->>>>>>> fa7cd46 (keycloak installation added for oracle)
 
 ---
 
