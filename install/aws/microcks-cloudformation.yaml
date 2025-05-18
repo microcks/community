@@ -97,7 +97,7 @@ Resources:
       ResourcesVpcConfig:
         SubnetIds: !Ref SubnetIds
         SecurityGroupIds:
- - !Ref VpcSecurityGroupId
+          - !Ref VpcSecurityGroupId
 
   # Node Instance Role
   NodeInstanceRole:
@@ -478,4 +478,3 @@ Outputs:
   MicrocksURL:
     Description: URL to access Microcks
     Value: !Sub https://${MicrocksDomain}
----
