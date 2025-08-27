@@ -42,8 +42,8 @@ The table below shows which Cloud Providers have been tested and validated with 
 
 | Distrib     | Version | Microcks version | Reporter               | Install method | Setup/Info |
 |-------------|---------|------------------|------------------------|----------------|------------|
-| OpenShift   | 4.12    | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Helm | [Link to setup](https://github.com/microcks/microcks/blob/master/install/kubernetes/README.md) |
-| GKE         | Dec 2024| 1.11.0           | [Raoul Quincempoix](https://github.com/raoul) | Operator | [Link to setup](https://microcks.io/documentation/guides/installation/kubernetes-operator/) |
+| OpenShift   | 4.12    | 1.11.2           | (your name) | Helm | [Link to setup](https://github.com/microcks/microcks/blob/master/install/kubernetes/README.md) |
+| GKE         | Dec 2024| 1.11.0           | (your name) | Operator | [Link to setup](https://microcks.io/documentation/guides/installation/kubernetes-operator/) |
 | AKS         |      |            |                      |       |       |
 | (add kubernetes distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
 
@@ -51,16 +51,16 @@ The table below shows which Cloud Providers have been tested and validated with 
 
 | Distrib           | Version     | Microcks version | Reporter               | Install method | Setup/Info |
 |-------------------|-------------|------------------|------------------------|----------------|------------|
-| MongoDB Atlas     | 2025-01-12  | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Cloud managed | M10 cluster |
-| MongoDB Community | 5.5.12      | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | Helm chart Bitnami | Self-hosted |
+| MongoDB Atlas     | 2025-01-12  | 1.11.2           | (your name) | Cloud managed | M10 cluster |
+| MongoDB Community | 5.5.12      | 1.11.2           | (your name) | Helm chart Bitnami | Self-hosted |
 | (add mongo distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
 
 ### Keycloak distrib
 
 | Distrib     | Version | Microcks version | Reporter               | Install method | Setup/Info |
 |-------------|---------|------------------|------------------------|----------------|------------|
-| RH SSO      | 8.11    | 1.11.2           | [Raoul Quincempoix](https://github.com/raoul) | RH SSO Operator | OpenShift deployment |
-| Keycloak    | 26.2.1  | 1.12.0           | [Raoul Quincempoix](https://github.com/raoul) | Helm | [Deploy guide](https://blog.devops.dev/deploy-keycloak-v24-to-k8s-cluster-with-helm-83e6714f2888) |
+| RH SSO      | 8.11    | 1.11.2           | (your name) | RH SSO Operator | OpenShift deployment |
+| Keycloak    | 26.2.1  | 1.12.0           | (your name) | Helm | [Deploy guide](https://blog.devops.dev/deploy-keycloak-v24-to-k8s-cluster-with-helm-83e6714f2888) |
 | (add keycloak distribution) | (version) | (microcks version) | (your name) | (install method) | (setup details) |
 
 ## Integrations
@@ -69,14 +69,14 @@ The table below shows which Cloud Providers have been tested and validated with 
 
 | Distrib     | Version | Microcks version | Reporter | Setup/Info |
 |-------------|---------|------------------|----------|------------|
-| Backstage   |         |                  |          |            |
+| Backstage   |         |                  | (your name) |            |
 | (add backstage version) | (version) | (microcks version) | (your name) | (setup details) |
 
 ### Jenkins distrib
 
 | Distrib     | Version | Microcks version | Reporter | Setup/Info |
 |-------------|---------|------------------|----------|------------|
-| Jenkins     |         |                  |          |            |
+| Jenkins     |         |                  | (your name) |            |
 | (add jenkins version) | (version) | (microcks version) | (your name) | (setup details) |
 
 ## Legend
