@@ -262,6 +262,45 @@ db.createCollection("users");
 db.createCollection("roles");
 ```
 
+Example of a script to init all the required collections : 
+```bash
+#!/bin/bash
+
+# MongoDB connection parameters
+HOST="<your-documentdb-host>"
+PORT="27017"
+USERNAME="<your-username>"
+PASSWORD="<your-password>"
+DATABASE="<your-database-name>"
+
+# Function to check and create collection
+function ensure_collection_exists() {
+  COLLECTION=$1
+  EXISTS=$(mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.getCollectionNames().includes('$COLLECTION')")
+  if [ "$EXISTS" != "true" ]; then
+    echo "Creating collection: $COLLECTION"
+    mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.createCollection('$COLLECTION')"
+  else
+    echo "Collection already exists: $COLLECTION"
+  fi
+}
+
+# List of required collections
+ensure_collection_exists "services"
+ensure_collection_exists "operations"
+ensure_collection_exists "responses"
+ensure_collection_exists "requests"
+ensure_collection_exists "tests"
+ensure_collection_exists "jobs"
+ensure_collection_exists "events"
+ensure_collection_exists "imports"
+ensure_collection_exists "snapshots"
+ensure_collection_exists "metadata"
+ensure_collection_exists "users"
+ensure_collection_exists "roles"
+
+```
+
 ## 7. Deploy Microcks using Helm
 ### 7.1 Add Microcks Helm Repository
 ```sh
