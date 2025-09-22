@@ -243,6 +243,25 @@ kubectl create secret generic microcks-mongodb-connection -n microcks \
   --from-literal=password=<PASSWORD>
 ```
 
+### 6.5 Init the Collections on DocumentDB
+
+DocumentDB doesn't support implicit collection creation when creating indexes. For that we need to init the collections before the Microcks Application is started.
+Connect to your DocumentDB instance in shell mode and execute the following collection creation : 
+```sh
+db.createCollection("services");
+db.createCollection("operations");
+db.createCollection("responses");
+db.createCollection("requests");
+db.createCollection("tests");
+db.createCollection("jobs");
+db.createCollection("events");
+db.createCollection("imports");
+db.createCollection("snapshots");
+db.createCollection("metadata");
+db.createCollection("users");
+db.createCollection("roles");
+```
+
 ## 7. Deploy Microcks using Helm
 ### 7.1 Add Microcks Helm Repository
 ```sh
