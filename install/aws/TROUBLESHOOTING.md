@@ -102,7 +102,7 @@ Microcks fails to start with the error: "Command failed with error 85: 'Implicit
 ### Solution:
 This error occurs because AWS DocumentDB does not support implicit collection creation when creating indexes. To resolve this, you need to manually create the required collections in your DocumentDB database before starting Microcks.
 
-Steps available in [Init The Collection Creation on DocumentDB](README.md#6.#65-init-the-collections-on-documentdb).
+Steps available in [Init The Collection Creation on DocumentDB](README.md#65-init-the-collections-on-documentdb).
 
 ---
 
