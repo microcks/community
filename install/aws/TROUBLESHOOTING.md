@@ -95,6 +95,15 @@ NGINX is not found or there is a "Not Secure" warning on Microcks and Keycloak U
 - Follow the necessary steps in [Keycloak Deployment Documentation](https://github.com/Vaishnav88sk/community/blob/main/install/aws/keycloak-installation.md).
 - Add the correct annotations to the keycloak.yaml and microcks.yaml configuration files for proper SSL/TLS configuration.
 
+## 6. DocumentDB implicit Collection creation error
+### Issue:
+Microcks fails to start with the error: "Command failed with error 85: 'Implicit collection creation not supported when creating indexes"
+
+### Solution:
+This error occurs because AWS DocumentDB does not support implicit collection creation when creating indexes. To resolve this, you need to manually create the required collections in your DocumentDB database before starting Microcks.
+
+Steps available in [Init The Collection Creation on DocumentDB](README.md#65-init-the-collections-on-documentdb).
+
 ---
 
 ## 📝 Contributions from the Community 🤝

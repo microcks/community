@@ -243,6 +243,66 @@ kubectl create secret generic microcks-mongodb-connection -n microcks \
   --from-literal=password=<PASSWORD>
 ```
 
+### 6.5 Init the Collections on DocumentDB
+
+DocumentDB doesn't support implicit collection creation when creating indexes. For that we need to init the collections before the Microcks Application is started.
+Connect to your DocumentDB instance in shell mode and execute the following collection creation : 
+```sh
+db.createCollection("services");
+db.createCollection("operations");
+db.createCollection("responses");
+db.createCollection("requests");
+db.createCollection("tests");
+db.createCollection("jobs");
+db.createCollection("events");
+db.createCollection("imports");
+db.createCollection("snapshots");
+db.createCollection("metadata");
+db.createCollection("users");
+db.createCollection("roles");
+db.createCollection("serviceState");
+```
+
+Example of a script to init all the required collections : 
+```bash
+#!/bin/bash
+
+# MongoDB connection parameters
+HOST="<your-documentdb-host>"
+PORT="27017"
+USERNAME="<your-username>"
+PASSWORD="<your-password>"
+DATABASE="<your-database-name>"
+
+# Function to check and create collection
+function ensure_collection_exists() {
+  COLLECTION=$1
+  EXISTS=$(mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.getCollectionNames().includes('$COLLECTION')")
+  if [ "$EXISTS" != "true" ]; then
+    echo "Creating collection: $COLLECTION"
+    mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.createCollection('$COLLECTION')"
+  else
+    echo "Collection already exists: $COLLECTION"
+  fi
+}
+
+# List of required collections
+ensure_collection_exists "services"
+ensure_collection_exists "operations"
+ensure_collection_exists "responses"
+ensure_collection_exists "requests"
+ensure_collection_exists "tests"
+ensure_collection_exists "jobs"
+ensure_collection_exists "events"
+ensure_collection_exists "imports"
+ensure_collection_exists "snapshots"
+ensure_collection_exists "metadata"
+ensure_collection_exists "users"
+ensure_collection_exists "roles"
+ensure_collection_exists "serviceState"
+
+```
+
 ## 7. Deploy Microcks using Helm
 ### 7.1 Add Microcks Helm Repository
 ```sh
