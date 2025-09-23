@@ -260,6 +260,7 @@ db.createCollection("snapshots");
 db.createCollection("metadata");
 db.createCollection("users");
 db.createCollection("roles");
+db.createCollection("serviceState");
 ```
 
 Example of a script to init all the required collections : 
@@ -298,6 +299,7 @@ ensure_collection_exists "snapshots"
 ensure_collection_exists "metadata"
 ensure_collection_exists "users"
 ensure_collection_exists "roles"
+ensure_collection_exists "serviceState"
 
 ```
 
