@@ -1,8 +1,168 @@
-author:	yada
-association:	none
-edited:	true
-status:	none
---
+# [Sandbox] Microcks
+
+## Issue description
+
+### Application contact emails
+
+[yacine@microcks.io](mailto:yacine@microcks.io), [laurent@microcks.io](mailto:laurent@microcks.io)
+
+### Project Summary
+
+The Kubernetes-Native multi-protocol open source enterprise testing and mocking API solution. 
+
+### Project Description
+
+The Microcks project was launched in 2015 at the emergence of containers and Kubernetes and has been designed from the ground up with cloud-native and microservices principles and design patterns. 
+
+💡From day one, Microcks had the vision of a multi-protocol API ecosystem due to the ubiquitous nature of API. This is especially true at the enterprise level where the technology strata are built over the years.
+
+As numerous API styles and protocols coexist, a uniform way to accelerate and secure their delivery is required! Our objective is to establish Microcks as the de-facto standard tool for delivering this unified approach the Open-Source way 🙌
+
+Microcks allows you to simulate API, easily build on-demand test and sandbox environments, and check the conformance of your API application. It makes this consistent across HTTP, gRPC, WebSockets, GraphQL, Kafka, NATS, Google PubSub, and other popular patterns and protocols of your API lifecycle. Microcks is a cross-functional collaborative platform to ease the transition to microservices, API-based cloud-native applications.
+
+For more information on the genesis, please see our [Why Microcks?](https://microcks.io/blog/why-microcks/)
+
+### Org repo URL
+
+https://github.com/microcks
+
+### Project repo URL
+
+https://github.com/microcks/microcks
+
+### Additional repos
+
+https://github.com/microcks/microcks-operator
+https://github.com/microcks/microcks-backstage-provider
+https://github.com/microcks/microcks.github.io
+https://github.com/microcks/microcks.io
+https://github.com/microcks/microcks-ansible-operator
+https://github.com/microcks/microcks-jenkins-plugin
+https://github.com/microcks/microcks-postman-runtime
+https://github.com/microcks/microcks-docker-desktop-extension
+https://github.com/microcks/microcks-cli
+https://github.com/microcks/community-mocks
+https://github.com/microcks/hub.microcks.io
+https://github.com/microcks/test-github-action
+https://github.com/microcks/import-github-action
+https://github.com/microcks/api-lifecycle
+https://github.com/microcks/microcks-quickstarters
+
+
+### Website URL
+
+https://microcks.io/
+
+### Roadmap
+
+https://github.com/orgs/microcks/projects/1
+
+### Roadmap context
+
+We are very ecosystem oriented and are open to interoperating with CNCF projects and open source projects to better serve our community users' interests.
+
+### Contributing Guide
+
+https://github.com/microcks/microcks/blob/master/CONTRIBUTING.md See also our organization contribution guide:  https://github.com/microcks/.github/blob/main/CONTRIBUTING.md
+
+### Code of Conduct (CoC)
+
+https://github.com/microcks/.github/blob/main/CODE_OF_CONDUCT.md
+
+### Adopters
+
+https://github.com/microcks/.github/blob/main/ADOPTERS.md
+
+### Contributing or Sponsoring Org
+
+https://postman.com
+
+### Maintainers file
+
+https://github.com/microcks/.github/blob/main/MAINTAINERS.md
+
+### IP Policy
+
+- [X] If the project is accepted, I agree the project will follow the CNCF IP Policy
+
+### Trademark and accounts
+
+- [X] If the project is accepted, I agree to donate all project trademarks and accounts to the CNCF
+
+### Why CNCF?
+
+Microcks was started in 2015 at the emergence of containers and Kubernetes and has been designed with cloud-native and microservices principles and design patterns since day one. 
+
+It is important to put our project under the CNCF umbrella to demonstrate to the cloud-native community our commitment to manage Microcks expansion the open source way by joining the foundation and to assure our growing community of users and contributors of neutral governance. This is also a giant opportunity to encourage and grow community adoption and contributions. Last but not least, learning from others and giving back to the community is part of the maintainer's way of living!
+
+
+### Benefit to the Landscape
+
+Microcks is a Kubernetes Native tool for API Mocking and Testing, and we aim to speed up, secure, and scale the company's API adoption, using an enterprise-grade universal API-first approach. Microcks is not only an API tooling “by developers, for developers” as it also aims to create a bridge between all the enterprise actors (business and product owners to developers) and assets (all kinds of API specifications and API). We think, that adding Microcks to the CNCF Landscape will help communities and enterprises to easiness cloud-native development, application life cycle management, and modernization.
+
+### Cloud Native 'Fit'
+
+We think the project fits in the TAG App Delivery landscape since mocking tools like Microcks can speed up API and application integration tests and delivery.
+
+### Cloud Native 'Integration'
+
+Depend on:
+- https://www.keycloak.org/ For identity and access management (IAM), see: https://microcks.io/documentation/administrating/users/
+- https://operatorframework.io/ For fully automated Kubernetes installation, see: https://microcks.io/documentation/installing/operator/
+- Full life cycle management and GitOps ready (CRD) in the next release ([ongoing rewrite using Quarkus](https://github.com/microcks/microcks-operator))
+- https://helm.sh/ For packaging Microcks for Kubernetes, see: https://microcks.io/documentation/installing/kubernetes/
+
+Complement and interoperate with:
+- https://backstage.io/ plugin for synchronizing Microcks content (APIs) for Backstage.io catalog, see: https://microcks.io/blog/backstage-integration-launch/
+- https://tekton.dev/ tasks for integrating Microcks into a cloud-native pipeline, see: https://microcks.io/documentation/automating/tekton/
+- https://cloudevents.io/ for simulating CloudEvents with AsyncAPI and Microcks, see:
+https://microcks.io/blog/simulating-cloudevents-with-asyncapi/ & recording of [AsyncAPI Conference 2021](https://youtu.be/_p9RyClgYhE) 
+
+### Cloud Native Overlap
+
+As far as we are aware, no existing CNCF project overlaps with Microcks.
+
+### Similar projects
+
+Elsewhere, yes we have some similar open source projects for mocking (Hoverfly, Keploy et Mockitosh...) or testing (Pact...) but no overlap (from what we are aware off) with tools covering both (mocking + testing) and with such a large multi-protocol and multi-specs as Microcks.
+
+As we often have the question of "Microcks vs Pact for contract testing", we have written a blog post for this purpose to try to clarify similarities and differences between the two projects. 
+Please see: https://medium.com/@lbroudoux/microcks-and-pact-for-api-contract-testing-3e0e7d4516ca 
+
+### Product or Service to Project separation
+
+N/A
+
+### Project presentations
+
+1st presentation to CNCF TAG App Delivery during [pre-day meetup at KubeCon](https://tag-app-delivery.cncf.io/blog/tag-app-delivery-at-kubecon-eu-2023/#pre-day-meetup---tuesday) + CloudNativeCon Europe 2023, see:
+- Slide deck ([PDF](https://drive.google.com/file/d/1YY5tIwgcVEjxaYSRfcrsYskaHZaMrHx9/view?usp=sharing) / [Google slide](https://docs.google.com/presentation/d/1DaXkCbXIfSIulLGQMnuuVJpCqcnkC-LLiZfoHcTpe4U/edit?usp=sharing)) 
+- Recording is available here: https://youtu.be/4xzklryIT7Q?t=10291
+
+2nd presentation (2023-05-17) as a follow-up during TAG App Delivery bi-weekly meeting, see:
+- CNCF TAG App Delivery [Meeting Notes](https://docs.google.com/document/d/1OykvqvhSG4AxEdmDMXilrupsX2n1qCSJUWwTc3I7AOs/edit#heading=h.2npmztrgu5sw)
+- Slide deck ([PDF](https://drive.google.com/file/d/1bBMquCAyY59xsSOvBqzD8nFPlkipMGvL/view?usp=sharing) / [Google slide](https://docs.google.com/presentation/d/1wcX6JHDeaOlJMiwX2PfzgM6JkoU-QY0zPJN6CWpiI0Y/edit?usp=sharing)) 
+- The recording is available here (with a live demo): https://youtu.be/UnNozJiNcz8?t=1599
+
+### Project champions
+
+[Josh Gavant](https://www.linkedin.com/in/joshgav) - Lead TAG App Delivery
+
+### Additional information
+
+This testimonial from J.B Hunt. is good community user feedback regarding why Microcks and the productivities gains that were realized:
+“
+Accelerating development
+The developers of the project mentioned above saved at least 7 months using Microcks. They were not only able to work concurrently but also captured the exact business requirements specified by the product owner in the form of example request/response pairs. These persistent mocks can now be utilized in sandbox environments if needed.
+“
+See for the full blog post:
+https://microcks.io/blog/jb-hunt-mock-it-till-you-make-it/
+
+
+## Comments
+
+- yada:
+
 The application for Microcks is ready for review🤞
 As stated in the submission above, we have done two presentations to TAG App Delivery:
 
@@ -19,12 +179,9 @@ As stated in the submission above, we have done two presentations to TAG App Del
 - Slide deck ([PDF](https://drive.google.com/file/d/1bBMquCAyY59xsSOvBqzD8nFPlkipMGvL/view?usp=sharing) / [Google slide](https://docs.google.com/presentation/d/1wcX6JHDeaOlJMiwX2PfzgM6JkoU-QY0zPJN6CWpiI0Y/edit?usp=sharing))
 - The recording is available here (with a live demo): https://youtu.be/UnNozJiNcz8?t=1599
 
---
-author:	dwojciec
-association:	none
-edited:	false
-status:	none
---
+
+- dwojciec:
+
 I am writing to express my strong support for the Microcks project, which I believe would be an excellent addition to the CNCF. Microcks is an open-source tool that provides automated API testing, contract validation, and documentation generation for REST and SOAP-based APIs. It is designed to integrate with existing CI/CD pipelines and DevOps toolchains, making it easy to incorporate API testing into your development workflow.
 
 Microcks supports a wide range of API testing frameworks, including OpenAPI, AsyncAPI, and GraphQL, and can generate API documentation in a variety of formats, including Swagger UI, ReDoc, and AsciiDoc. These features make Microcks an incredibly useful tool for developers and organizations looking to improve the quality and reliability of their APIs, and to streamline their API testing and documentation processes.
@@ -32,48 +189,30 @@ Microcks supports a wide range of API testing frameworks, including OpenAPI, Asy
 What's more, I know firsthand that Microcks is highly regarded by its users. Many customers initially considered it a "nice-to-have" tool, but soon realized that it was a "must-have" once they started using it. The feedback I have received from developers and organizations that have implemented Microcks has been overwhelmingly positive, and I believe that it has the potential to make a real difference in the industry.
 
 I strongly encourage the CNCF to consider Microcks for acceptance into the organization. I believe that this project aligns perfectly with the mission and values of the CNCF, and that it could benefit greatly from the resources and support that the organization can offer. Thank you for your time and consideration.
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 Thanks @joshgav for mentioning Microcks in https://github.com/cncf/sandbox/issues/30 comments.
 We have noticed the AIP project and will join the next TAG App Delivery meeting on Wednesday June 21 to follow the presentation.
---
-author:	joshgav
-association:	collaborator
-edited:	false
-status:	none
---
+
+- joshgav:
+
 @yada presented Microcks to TAG App Delivery last month, all the details are in this issue: https://github.com/cncf/tag-app-delivery/issues/411
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 BTW, We have created the #microcks channel in the CNCF slack if you have any questions or would like to know more on the project 🙌 Thanks @amye for the support 👍
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 @amye or @TheFoxAtWork can you add the "App Delivery" label to this submission?
---
-author:	TamimiGitHub
-association:	none
-edited:	false
-status:	none
---
+
+- TamimiGitHub:
+
 Looking forward for this! I too support Microcks being part of the CNCF. Representing the event driven architecture (EDA) industry, I do see great opportunities and potentials of Microcks from asynchronous APIs mocking and testing. There is very limited tooling in EDA for API testing and mocking and Microcks is the most mature in this space. 
---
-author:	joshgav
-association:	collaborator
-edited:	false
-status:	none
---
+
+- joshgav:
+
 Hi folks - TAG App Delivery worked with @yada at Kubecon EU and at our May 17 meeting to learn all about Microcks; I'll share a report and recommendation here. In short, **if CNCF wants to accept projects focused on cloud-native application development then Microcks is a good fit**.
 
 _Background_: Microcks' capabilities are valuable for developing microservices-oriented, cloud-native applications that communicate synchronously or asynchronously via structured transports and models like HTTP/JSON, GRPC/Protobuf, Kafka/JSON, et al. It aids in constructing such services by letting developers define an interface and semantics without writing a complete implementation of an API service, helpful for API-first development and test simulations in particular.
@@ -87,12 +226,9 @@ Also relevant, Microcks integrates existing and emerging open standards for API 
 My only doubt has been around how CNCF wants to support projects aimed at application developers and cloud-native development. Of course we want them to grow and they're vital to the cloud-native ecosystem, but do we want to host them in CNCF or would they be better off in say Eclipse or Apache?
 
 If CNCF does want to host projects that facilitate cloud-native app development then Microcks would be a great fit. Thank you @yada!
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 Thanks, @joshgav and the TAG App Delivery for the report and recommendation.
 
 To TOC members and @justincormack 👇
@@ -134,19 +270,13 @@ Looking forward to the next steps and let us know if you have any questions or n
 
 
 Thanks & Regard,
---
-author:	amye
-association:	none
-edited:	false
-status:	none
---
+
+- amye:
+
 /vote-sandbox
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 ## Vote created
 
 **@amye** has called for a vote on `[Sandbox] Microcks` (#37).
@@ -176,12 +306,9 @@ You can cast your vote by reacting to `this` comment. The following reactions ar
 *Please note that voting for multiple options is not allowed and those votes won't be counted.*
 
 The vote will be open for `7days`. It will pass if at least `66%` of the users with binding votes vote `In favor 👍`. Once it's closed, results will be published here as a new comment.
---
-author:	abangser
-association:	none
-edited:	false
-status:	none
---
+
+- abangser:
+
 I am writing to express my support in Microcks as a CNCF Sandbox project which seems to fit the criteria of “Independent projects that fit the CNCF mission and provide the potential for a novel approach to existing functional areas (or are an attempt to meet an unfulfilled need).”
 
 I am a part of the the App Delivery TAG and have seen two presentations on this project. The key reasons I see this as a viable Sandbox project is because:
@@ -189,19 +316,13 @@ I am a part of the the App Delivery TAG and have seen two presentations on this 
 - It builds with the principles held by the TAG (e.g. API driven interactions GitOps enabled deployments)
 - Microcks has made a concerted effort to integrate with the larger OSS ecosystem (deployments via operators and helm charts, integrations with Backstage and Keycloak and more).
 - Given the CNCF mission to “make cloud computing ubiquitous” and the explicit push for microservices it is important to support and grow projects which enable the success of these architectures by enabling the robust automation to support a loosely coupled architecture.
---
-author:	amye
-association:	none
-edited:	false
-status:	none
---
+
+- amye:
+
 /check-vote
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 ## Vote status
 
 So far `27.27%` of the users with binding vote are in favor (passing threshold: `66%`).
@@ -274,30 +395,21 @@ So far `27.27%` of the users with binding vote are in favor (passing threshold: 
 
 
 
---
-author:	hguerrero
-association:	none
-edited:	false
-status:	none
---
+
+- hguerrero:
+
 Hi everyone! Here is Hugo from Red Hat. I am writing to support the Microcks submission as a sandbox project. 
 
 At Red Hat, we noticed a gap in cloud native solutions for API mocking and testing. That's why we decided to work with Microcks on those areas to enhance our story on API management. I have been contributing for several months to the project, mainly with the Docker Desktop Extension, to the point of becoming the primary maintainer for that component. 
 
 In addition, I have seen the value provided to other organizations using the solution to improve their developer experience. You can find adopters for the project from banks, transport, or the public sector. For this reason, I support their submission.
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 /check-vote
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 ## Vote status
 
 So far `63.64%` of the users with binding vote are in favor (passing threshold: `66%`).
@@ -392,21 +504,15 @@ So far `63.64%` of the users with binding vote are in favor (passing threshold: 
 
 
 
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 Only repository collaborators can create a vote @ludovic-pourrat.
 
 For organization-owned repositories, the list of collaborators includes outside collaborators, organization members that are direct collaborators, organization members with access through team memberships, organization members with access through default organization permissions, and organization owners.
---
-author:	yada
-association:	none
-edited:	false
-status:	none
---
+
+- yada:
+
 **Regarding Microcks as a good fit in the CNCF?**
 
 📢 We are delighted to have the support of friends and great companies like [Bitergia](https://www.linkedin.com/company/bitergia/) to support our Sandbox CNCF application. Kudos to  [Diane Mueller](https://www.linkedin.com/in/ACoAAAIuxkkBGITIkpaFHjMS2N6vLPRb5njKmV4) for a deep GitHub data analysis regarding Microcks and CNCF connectedness for the last five years! 🚀
@@ -420,34 +526,22 @@ This analysis also reports (for the same period) some very cool metrics from our
 <img width="1512" alt="CNCF contribs by Microcks" src="https://github.com/cncf/sandbox/assets/552526/72a55cee-a018-4dd1-b06d-40ac73cefc49">
 
 👉 https://www.linkedin.com/feed/update/urn:li:activity:7076562037866147840
---
-author:	scottrigby
-association:	none
-edited:	false
-status:	none
---
+
+- scottrigby:
+
 Hi, I'm part of TAG App Delivery, Adding my support. Hope it's not too late for feedback to be considered.  I was impressed by Yacine's presentation at the meeting. They've put a lot of work into making this a sandbox-worthy project and seem to have the momentum to continue. I'm also excited to play with this in the coming weeks ✊
---
-author:	dmueller2001
-association:	none
-edited:	false
-status:	none
---
+
+- dmueller2001:
+
 +1 non-binding  well run community, well connected to upstream projects (see: https://github.com/cncf/sandbox/issues/37#issuecomment-1597284946 for more details); nice plugin built in collaboration with the BackStage community and lots of enterprise traction (aka deployments) giving feedback and testing. Looking forward to seeing where this momentum take them next!
---
-author:	amye
-association:	none
-edited:	false
-status:	none
---
+
+- amye:
+
 /check-vote
 
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 ## Vote status
 
 So far `72.73%` of the users with binding vote are in favor (passing threshold: `66%`).
@@ -551,19 +645,13 @@ So far `72.73%` of the users with binding vote are in favor (passing threshold: 
 
 
 
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 Votes can only be checked once a day.
---
-author:	git-vote
-association:	none
-edited:	false
-status:	none
---
+
+- git-vote:
+
 ## Vote closed
 
 The vote **passed**! 🎉
@@ -673,11 +761,7 @@ The vote **passed**! 🎉
 
 
 
---
-author:	amye
-association:	none
-edited:	false
-status:	none
---
+
+- amye:
+
 Closing with approved, new onboarding issue: https://github.com/cncf/sandbox/issues/197 
---
