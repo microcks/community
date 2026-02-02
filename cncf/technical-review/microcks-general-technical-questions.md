@@ -6,14 +6,14 @@
 - **Date Updated:** 2026-01-30
 - **Template Version:** v1.0
 - **Description:**  
-  Microcks is an open source cloud native tool for mocking and testing APIs and event-driven. It supports REST, gRPC, GraphQL, SOAP, and AsyncAPI-based services, enabling teams streamline cloud native application development and maintenance (See, [What is Microcks?](https://microcks.io/documentation/overview/what-is-microcks/)).
+  Microcks is an open source, cloud native tool for mocking and testing APIs and event-driven. It supports REST, gRPC, GraphQL, SOAP, and AsyncAPI-based services, enabling teams to streamline cloud native application development and maintenance (See, [What is Microcks?](https://microcks.io/documentation/overview/what-is-microcks/)).
 
 ## Day 0 - Planning Phase
 
 ### Scope
 
 - **Roadmap process:**  
-  The Microcks roadmap is driven by community input, maintainer and code-owners discussions, GitHub issues, and adopter feedback. Scope for mid- and long-term features is discussed openly in the project repository and community channels, with prioritization based on user impact, maintainability, and alignment with cloud native API lifecycle needs. Contributions map directly back to roadmap items through issues and pull requests.
+  The Microcks roadmap is driven by community input, maintainer and code-owners discussions, GitHub issues, and adopter feedback. Scope for mid- and long-term features is openly discussed in the project repository and community channels, with prioritization based on user impact, maintainability, and alignment with the cloud native API lifecycle. Contributions map directly back to roadmap items through issues and pull requests.
 
 - **Target personas:**  
   - API developers  
@@ -107,7 +107,7 @@ Documentation reference:
 
   Microcks' internal design principles follow a clean, hexagonal architecture, with all features available through REST APIs.
 
-  The schema below represents a full-featured architecture deployment with relations and actions between actors and connection to outer brokers. We represented Kafka ones (X broker) as well as brokers (Y and Z) from other protocols. Microcks users access the main webapp either from their browser to see the console or from the CLI or any other application using the API endpoints.
+  The schema below represents a full-featured architecture deployment with relations and actions between actors, as well as connections to external brokers. We represented Kafka ones (X broker) as well as brokers (Y and Z) from other protocols. Microcks users access the main webapp either in their browser to view the console, or via the CLI or other applications using the API endpoints.
 
   ![Microcks architecture](https://microcks.io/images/documentation/architecture-full.png)
 
@@ -116,7 +116,7 @@ Documentation reference:
 
 - **Service dependencies:**  
   - MongoDB (persistent storage)  
-  - Keycloak and PostgreSQL (authentication and authorization) is optional
+  - Keycloak and PostgreSQL (authentication and authorization) are optional
   - External brokers for Async messages (Kafka, MQTT...) are optional
 
 - **Identity and Access Management:**  
@@ -136,7 +136,7 @@ Documentation reference:
   See, [Deployment topologies](https://microcks.io/documentation/explanations/deployment-topologies/)
 
 - **Resource requirements:**  
-  Resource usage depends on scale and usage patterns. Typical deployments require moderate CPU and memory, with increased needs when running large numbers of tests or simulations.
+  Resource usage depends on scale and usage patterns. Typical deployments require moderate CPU and memory resources. All resources can be increased with higher demands when running large numbers of tests or simulations.
 
   To help adopters with sizing Microcks, we’ve shared [k6 benchmark results](https://github.com/microcks/microcks/tree/master/benchmark) and launched a [community initiative](https://github.com/microcks/community/blob/main/install/SIZING.md) where adopters can share best practices and feedback. This initiative was also part of the [LFX Mentorship Program](https://www.cncf.io/blog/2025/08/14/beyond-code-open-source-mentorship-and-microcks/).
 
@@ -165,7 +165,7 @@ Documentation reference:
   - Docker Compose (development/testing)
 
 * **Testing and validation:**  
-  Installation is validated by accessing the Microcks UI, deploying and running built-in sample APIs.
+  Installation is validated by accessing the Microcks UI and deploying and running the built-in sample APIs.
 
 Documentation reference:  
 <https://microcks.io/documentation/guides/installation/>
@@ -237,5 +237,5 @@ Documentation reference:
 Documentation reference:  
 <https://github.com/microcks/microcks/blob/master/TESTED_CONFIGURATIONS.md>
 
-WIP as a community effort (adopters contribution):  
+WIP as a community effort (adopters' contribution):  
 <https://github.com/microcks/community/blob/main/install/COMPATIBILITY-MATRIX.md>
