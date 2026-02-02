@@ -137,7 +137,7 @@ Documentation reference:
   To help adopters with sizing Microcks, we’ve shared [k6 benchmark results](https://github.com/microcks/microcks/tree/master/benchmark) and launched a [community initiative](https://github.com/microcks/community/blob/main/install/SIZING.md) where adopters can share best practices and feedback. This initiative was also part of the [LFX Mentorship Program](https://www.cncf.io/blog/2025/08/14/beyond-code-open-source-mentorship-and-microcks/).
 
 - **Storage requirements:**  
-  - Persistent storage for MongoDB  
+  - Persistent or ephemeral storage for MongoDB  
   - Ephemeral storage for pods and runtime data
 
 - **API Design:**  
