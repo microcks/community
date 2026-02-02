@@ -103,6 +103,10 @@ Documentation reference:
 ### Design
 
 - **Design principles:**  
+  Microcks is a modular, cloud-native application that can be deployed using various installation methods. All components are distributed as container images with different flavours to adapt to use cases (a Kubernetes cluster or a developer's laptop). Many deployment options are available: all infrastructure-dependent components are configurable, and adopters can run their own or use managed services.
+
+  Microcks' internal design principles follow a clean, hexagonal architecture, with all features available through REST APIs.
+
   The schema below represents a full-featured architecture deployment with relations and actions between actors and connection to outer brokers. We represented Kafka ones (X broker) as well as brokers (Y and Z) from other protocols. Microcks users access the main webapp either from their browser to see the console or from the CLI or any other application using the API endpoints.
 
   ![Microcks architecture](https://microcks.io/images/documentation/architecture-full.png)
