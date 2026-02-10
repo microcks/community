@@ -163,6 +163,7 @@ Documentation reference:
   - Helm charts
   - Kubernetes Operator (full GitOps approach)
   - Docker Compose (development/testing)
+  - Embed Microcks into your unit tests with the [help of Testcontainers](https://microcks.io/documentation/references/testcontainers-modules/) libraries ([shift-left approach](https://www.linkedin.com/pulse/how-microcks-fit-unify-inner-outer-loops-cloud-native-kheddache/))
 
 * **Testing and validation:**  
   Installation is validated by accessing the Microcks UI and deploying and running the built-in sample APIs.
