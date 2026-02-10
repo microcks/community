@@ -168,7 +168,8 @@ Documentation reference:
   - Embed Microcks into your unit tests with the [help of Testcontainers](https://microcks.io/documentation/references/testcontainers-modules/) libraries ([shift-left approach](https://www.linkedin.com/pulse/how-microcks-fit-unify-inner-outer-loops-cloud-native-kheddache/))
 
 * **Testing and validation:**  
-  Installation is validated by accessing the Microcks UI and deploying and running the built-in sample APIs.
+  - We’ve shared [k6 benchmark results](https://github.com/microcks/microcks/tree/master/benchmark) and launched a [community initiative](https://github.com/microcks/community/blob/main/install/SIZING.md) where adopters can share best practices and feedback.
+  - Installation is validated by accessing the Microcks UI and deploying and running the built-in sample APIs.
 
 Documentation reference:  
 <https://microcks.io/documentation/guides/installation/>
