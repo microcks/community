@@ -138,6 +138,8 @@ Documentation reference:
 - **Resource requirements:**  
   Resource usage depends on scale and usage patterns. Typical deployments require moderate CPU and memory resources. All resources can be increased with higher demands when running large numbers of tests or simulations.
 
+  For full instructions and deployment options, we recommend reading the README ([using the Helm package manager](https://github.com/microcks/microcks/blob/master/install/kubernetes/README.md)) on GitHub repository.
+
   To help adopters with sizing Microcks, we’ve shared [k6 benchmark results](https://github.com/microcks/microcks/tree/master/benchmark) and launched a [community initiative](https://github.com/microcks/community/blob/main/install/SIZING.md) where adopters can share best practices and feedback. This initiative was also part of the [LFX Mentorship Program](https://www.cncf.io/blog/2025/08/14/beyond-code-open-source-mentorship-and-microcks/).
 
 - **Storage requirements:**  
