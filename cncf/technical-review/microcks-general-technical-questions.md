@@ -194,7 +194,7 @@ Documentation reference:
 - **Threat modeling:**  
   - Least-privilege access via Kubernetes RBAC  
   - TLS and certificate management handled by the platform  
-  - Secure software supply chain practices via [container image](https://microcks.io/documentation/references/container-images/) builds and dependency management
+  - [Secure software supply](https://microcks.io/documentation/references/container-images/#software-supply-chain-security) chain practices via [container image](https://microcks.io/documentation/references/container-images/) builds, many tools (Clair on Quay.io, Docker Scout on Docker Hub, Cosign, SLSA and SBOM), and dependency management
 
 Documentation reference:  
 <https://microcks.io/documentation/references/configuration/security-config/>
