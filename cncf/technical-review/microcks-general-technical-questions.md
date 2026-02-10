@@ -193,7 +193,8 @@ Documentation reference:
 
 - **Threat modeling:**  
   - Least-privilege access via Kubernetes RBAC  
-  - TLS and certificate management handled by the platform  
+  - TLS and certificate management handled by the platform
+  - We recommend integrating with cert-manager, which is planned and supported in our Helm charts and Kubernetes Operator  
   - [Secure software supply](https://microcks.io/documentation/references/container-images/#software-supply-chain-security) chain practices via [container image](https://microcks.io/documentation/references/container-images/) builds, many tools (Clair on Quay.io, Docker Scout on Docker Hub, Cosign, SLSA and SBOM), and dependency management
 
 Documentation reference:  
