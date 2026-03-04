@@ -87,6 +87,8 @@ In case of a tie:
 
 ## Steering Committee Meetings
 
+Steering Committee meetings should align with the [project release process](https://github.com/microcks/microcks/blob/master/RELEASE.md), particularly the Design phase, to better support roadmap guidance.
+
 - Meetings will occur **at least once per quarter**.
 - Additional meetings may be scheduled as needed.
 - Meetings are expected to be transparent.
