@@ -77,13 +77,13 @@ In case of a tie:
 - Members may seek renewal following the same nomination process.
 - Membership expires if eligibility conditions are no longer met.
 
-## Current Steering Committee Members
+## Current Steering Committee Members 👥
 
-- Member #1 (Organization)
-- Member #2 (Organization)
-- Member #3 (Organization)
-- Member #4 (Organization)
-- Member #5 (Organization)
+| Member | Organization | GitHub Profile |
+| :--- | :--- | :--- |
+| Hugo Guerrero | [Kong](https://konghq.com/) | [@hguerrero](https://github.com/hguerrero) |
+| Ludovic Pourrat | [Lombard Odier](https://www.lombardodier.com/) | [@ludovic-pourrat](https://github.com/ludovic-pourrat) |
+| Kin Lane | [Naftiko](https://naftiko.io/) | [@kinlane](https://github.com/kinlane) |
 
 ## Steering Committee Meetings
 
