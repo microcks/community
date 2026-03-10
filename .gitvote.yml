@@ -1,3 +1,9 @@
+# GitVote configuration file
+
+audit:
+  enabled: false
+
+# Default profile → invoked with /vote
 profiles:
   default:
     # Enforce policies described in our governance file, see: https://github.com/microcks/.github/blob/main/GOVERNANCE.md
@@ -5,18 +11,22 @@ profiles:
     pass_threshold: 66
     # Check vote status every day, default is fine for us here
     periodic_status_check: "1 day"
-    # Let automate the issue or PR closing when the vote is done 👍
+    # Let's automate the issue or PR closing when the vote is done 👍
     close_on_passing: true
     # This allows participants sufficient opportunity to engage
     # and reflect before the vote is automatically finalized; 1 week for community feedback and comments
     close_on_passing_min_wait: "1 week"
-    # Currently and according to our governance file, only maintainers have the right to vote
+    # Currently, and according to our governance file, only maintainers have the right to vote
     # You are still encouraged to participate in voting, even if your vote is not binding, ref: close_on_passing_min_wait option above
+  
+  # Steering Committee profile → invoked with /vote-sc
+  sc:
+    duration: 2w
+    pass_threshold: 66
+    periodic_status_check: "1 day"
+    close_on_passing: true
+    close_on_passing_min_wait: "1 week"
     allowed_voters:
-      users:
-        - lbroudoux
-        - yada
+      teams:
+        - steering-committee
       exclude_team_maintainers: false
-
-    # TODO: It will be nice to see if we can announce votes on Discord or https://github.com/orgs/microcks/discussions/categories/announcements
-    # Using the announcements, ref: https://github.com/cncf/gitvote/blob/main/docs/config/.gitvote.yml 
