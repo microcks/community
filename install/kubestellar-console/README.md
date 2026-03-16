@@ -75,6 +75,20 @@ kubectl delete namespace microcks
 | `keycloak` pod in `CrashLoopBackOff` | Missing database connection | Check Keycloak logs: `kubectl logs -n microcks -l app=keycloak` |
 | Port-forward fails with "connection refused" | Pod not ready | Wait for all pods: `kubectl wait --for=condition=ready pod -l app=microcks -n microcks --timeout=120s` |
 
+## Solution Missions for Common Issues
+
+In addition to the install mission, the console includes guided troubleshooting missions for the most commonly reported Microcks issues:
+
+| # | Mission | Issue | What it fixes |
+|---|---------|-------|---------------|
+| 1 | [Keycloak authentication failure](https://console.kubestellar.io/missions/microcks-keycloak-authentication-failure?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) | [#1232](https://github.com/microcks/microcks/issues/1232) | "Failed to Initialize authentication Subsystem" — SSL requirement mismatch between Keycloak and Microcks |
+| 2 | [Blank API/Services list](https://console.kubestellar.io/missions/microcks-ui-blank-api-list?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) | [#528](https://github.com/microcks/microcks/issues/528) | UI shows blank page when listing APIs — Keycloak SSL warning silently blocking requests |
+| 3 | [Daily statistics error](https://console.kubestellar.io/missions/microcks-daily-statistics-error?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) | [#540](https://github.com/microcks/microcks/issues/540) | IncorrectResultSizeDataAccessException — duplicate MongoDB documents from concurrent replicas |
+| 4 | [MongoDB PVC pending](https://console.kubestellar.io/missions/microcks-mongodb-pvc-pending?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) | Common | MongoDB pod stuck in Pending — no default StorageClass or missing CSI driver |
+| 5 | [Fallback dispatcher not working](https://console.kubestellar.io/missions/microcks-fallback-dispatcher-not-working?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) | [#741](https://github.com/microcks/microcks/issues/741) | FALLBACK dispatcher always returns default response — incorrect JSON rules format |
+
+Each mission walks through diagnosis, fix, and verification steps with commands you can run against your cluster.
+
 ## Mission Source
 
 The mission definition is an open-source JSON file in the [console-kb](https://github.com/kubestellar/console-kb/blob/master/solutions/cncf-install/install-microcks.json?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) repository. PRs to improve the Microcks mission steps, add validation checks, or update versions are welcome.
