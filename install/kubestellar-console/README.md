@@ -67,17 +67,6 @@ helm uninstall microcks --namespace microcks
 kubectl delete namespace microcks
 ```
 
-## Monitoring Microcks with KubeStellar Console
-
-After installation, the console provides a [monitoring card for Microcks](https://console.kubestellar.io?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) that tracks:
-
-- Pod health and restart counts across clusters
-- Service endpoint availability
-- Resource utilization (CPU, memory)
-- Deployment rollout status
-
-The card is available in the console's card catalog under the "App Definition" category.
-
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
