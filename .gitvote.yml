@@ -18,6 +18,13 @@ profiles:
     close_on_passing_min_wait: "1 week"
     # Currently, and according to our governance file, only maintainers have the right to vote
     # You are still encouraged to participate in voting, even if your vote is not binding, ref: close_on_passing_min_wait option above
+    # Note: allowed_voters, we are not using the team maintainers to exclude microcks-bot
+    allowed_voters:
+      users:
+        - lbroudoux
+        - yada
+        - SebastienDegodez
+      exclude_team_maintainers: false
   
   # Steering Committee profile → invoked with /vote-sc
   sc:
