@@ -91,7 +91,7 @@ Each mission walks through diagnosis, fix, and verification steps with commands 
 
 ## Mission Source
 
-The mission definition is an open-source JSON file in the [console-kb](https://github.com/kubestellar/console-kb/blob/master/solutions/cncf-install/install-microcks.json?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) repository. PRs to improve the Microcks mission steps, add validation checks, or update versions are welcome.
+The mission definition is an open-source JSON file in the [console-kb](https://github.com/kubestellar/console-kb/blob/master/fixes/cncf-install/install-microcks.json?utm_source=github&utm_medium=pr&utm_campaign=cncf_outreach&utm_term=microcks) repository. PRs to improve the Microcks mission steps, add validation checks, or update versions are welcome.
 
 ## References
 
