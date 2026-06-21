@@ -69,11 +69,15 @@ Create a policy named `KeycloakEKSFullAccessPolicy.json` with the following perm
 Apply the policy:
 ```sh
 eksctl utils associate-iam-oidc-provider --region=<REGION> --cluster=<CLUSTER-NAME> --approve
+```
 
 ### Create IAM policy for CloudWatch, ECR, etc.
+```sh
 aws iam create-policy \
   --policy-name AmazonEKSClusterPolicy \
   --policy-document file://KeycloakEKSFullAccessPolicy.json
+
+# Note: Ensure this policy is attached to the IAM user or role executing the EKS cluster deployment.
 ```
 
 ## 3. Create an EKS Cluster with eksctl
@@ -83,7 +87,7 @@ eksctl create cluster \
   --name <CLUSTER-NAME> \
   --region <REGION> \
   --version <LATEST-VERSION> \
-  --vpc-public-subnets <PUBLIC-SUBNETS> \  # Comma separated
+  --vpc-public-subnets <PUBLIC-SUBNETS> \
   --nodegroup-name microcks-nodes \
   --node-type t3.medium \
   --nodes 2 \
@@ -168,7 +172,7 @@ Wait for 10-11 minutes for the instance to be provisioned.
 
 ### 4.4 Create a Database
 Connect to the RDS PostgreSQL instance: 
-(You may need to make Aurora Cluster `publically accessible` through console.)
+(You may need to make Aurora Cluster `publicly accessible` through console.)
 ```sh
 psql -h <Aurora-endpoint> -U microcks -d postgres
 ```
@@ -208,15 +212,19 @@ aws docdb create-db-subnet-group \
 ```
 
 ### 6.2 Create a DocumentDB Cluster
+
+**IMPORTANT:** By default, new AWS DocumentDB clusters have TLS enabled. For production environments, it is highly recommended to leave TLS enabled. You will need the AWS RDS CA bundle to connect securely from Microcks.
+
 ```sh
 aws docdb create-db-cluster \
   --db-cluster-identifier microcks-docdb-cluster \
   --master-username microcks \
-  --master-user-password microcks123 \    # Set a strong password
+  --master-user-password microcks123 \
   --vpc-security-group-ids <VPC-SECURITY-GROUP-ID> \
   --db-subnet-group-name microcks-docdb-subnet-group \
   --region <REGION>
 ```
+
 Retrieve the endpoint for your Microcks configuration:
 ```sh
 aws docdb describe-db-clusters \
@@ -236,16 +244,27 @@ aws docdb create-db-instance \
 ```
 ⏳ Wait for about 10 minutes for the instance to be fully provisioned and ready.
 
-### 6.4 Create the MongoDB Connection Secret
+### 6.4 Create the MongoDB Connection Secrets
+
+Create a secret for the MongoDB credentials:
 ```sh
 kubectl create secret generic microcks-mongodb-connection -n microcks \
   --from-literal=username=<USERNAME> \
   --from-literal=password=<PASSWORD>
 ```
 
+Download the AWS RDS CA bundle and create a secret for it (required for TLS):
+```sh
+wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+kubectl create secret generic documentdb-ca-bundle --from-file=global-bundle.pem -n microcks
+```
+
 ### 6.5 Init the Collections on DocumentDB
 
 DocumentDB doesn't support implicit collection creation when creating indexes. For that we need to init the collections before the Microcks Application is started.
+
+**IMPORTANT:** AWS DocumentDB clusters are strictly private. The script below **must be executed from an EC2 instance or a Kubernetes Pod** that resides within the same VPC. If connecting with TLS enabled, you will need to append `--tls --tlsCAFile global-bundle.pem` to your mongo connection string.
+
 Connect to your DocumentDB instance in shell mode and execute the following collection creation : 
 ```sh
 db.createCollection("services");
@@ -277,10 +296,10 @@ DATABASE="<your-database-name>"
 # Function to check and create collection
 function ensure_collection_exists() {
   COLLECTION=$1
-  EXISTS=$(mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.getCollectionNames().includes('$COLLECTION')")
+    EXISTS=$(mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --tls --tlsCAFile global-bundle.pem --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.getCollectionNames().includes('$COLLECTION')")
   if [ "$EXISTS" != "true" ]; then
     echo "Creating collection: $COLLECTION"
-    mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.createCollection('$COLLECTION')"
+    mongo --host "$HOST" --port "$PORT" -u "$USERNAME" -p "$PASSWORD" --tls --tlsCAFile global-bundle.pem --authenticationDatabase "$DATABASE" "$DATABASE" --quiet --eval "db.createCollection('$COLLECTION')"
   else
     echo "Collection already exists: $COLLECTION"
   fi
@@ -330,6 +349,16 @@ microcks:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+
+  # Mount the DocumentDB CA bundle
+  extraVolumeMounts:
+    - name: documentdb-ca
+      mountPath: "/certs"
+      readOnly: true
+  extraVolumes:
+    - name: documentdb-ca
+      secret:
+        secretName: documentdb-ca-bundle
     
   env:
     - name: SPRING_DATA_MONGODB_URI
@@ -351,6 +380,8 @@ keycloak:
 
 mongodb:
   install: false  
+  uri: mongodb://<Your-DocumentDB-URL>:27017/microcks
+  uriParameters: "?authSource=microcks&tls=true&tlsCAFile=/certs/global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
   database: microcks
   secretRef:
     secret: microcks-mongodb-connection
@@ -391,7 +422,7 @@ aws rds delete-db-cluster --db-cluster-identifier microcks-db-cluster --skip-fin
 aws docdb delete-db-cluster --db-cluster-identifier microcks-docdb-cluster --skip-final-snapshot
 ```
 
-Microcks is now deployed on **AWS EKS** with **Aurora RDS, DocumentDB, and ALB**. 🚀 Enjoy your SaaS deployment!
+Microcks is now deployed on **AWS EKS** with **Aurora RDS, DocumentDB, and NGINX Ingress**. 🚀 Enjoy your SaaS deployment!
 
 ---
 

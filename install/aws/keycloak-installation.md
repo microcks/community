@@ -67,11 +67,15 @@ Create a policy named `KeycloakEKSFullAccessPolicy.json` with the following perm
 Apply the policy:
 ```sh
 eksctl utils associate-iam-oidc-provider --region=<REGION> --cluster=<CLUSTER-NAME> --approve
+```
 
 ### Create IAM policy for CloudWatch, ECR, etc.
+```sh
 aws iam create-policy \
   --policy-name AmazonEKSClusterPolicy \
   --policy-document file://KeycloakEKSFullAccessPolicy.json
+
+# Note: Ensure this policy is attached to the IAM user or role executing the EKS cluster deployment.
 ```
 
 ## 3. Create an EKS Cluster with eksctl
@@ -162,7 +166,7 @@ Wait for 10-11 minutes for the instance to be provisioned.
 
 ### Step 4: Create a Database
 Connect to the RDS PostgreSQL instance: 
-(You may need to make Aurora Cluster `publically accessible` through console.)
+(You may need to make Aurora Cluster `publicly accessible` through console.)
 ```sh
 psql -h <Aurora-endpoint> -U microcks -d postgres
 ```
