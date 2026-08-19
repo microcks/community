@@ -13,8 +13,9 @@ Microcks is compatible with **managed Kubernetes services** such as:
 
 - **Amazon Elastic Kubernetes Service (EKS)**  
 - **Google Kubernetes Engine (GKE)**  
-- **Microsoft Azure Kubernetes Service (AKS)**  
-- **Other platforms**: OVH, Oracle Cloud, Scaleway, etc.  
+- **Microsoft Azure Kubernetes Service (AKS)**
+- **OVHcloud Managed Kubernetes Service (MKS)**
+- **Other platforms**: Oracle Cloud, Scaleway, etc.  
 
 This guide is part of a **collaborative community effort** to document deployment strategies for different cloud providers.  
 If your preferred platform is not listed or lacks detailed instructions, feel free to **contribute** or **open an issue** in the [Microcks Community Repository](https://github.com/microcks/community).  
@@ -32,5 +33,5 @@ Below is a list of supported platforms, along with links to their official docum
 | **Google Cloud Platform**  | Google Kubernetes Engine (GKE)          | [GKE Documentation](https://cloud.google.com/kubernetes-engine/docs/quickstart)                  | [Completed – Awaiting Review and Feedback](https://github.com/microcks/community/tree/main/install/gcp)   |
 | **Microsoft Azure**        | Azure Kubernetes Service (AKS)          | [AKS Documentation](https://learn.microsoft.com/en-us/azure/aks/)                                | [Completed – Awaiting Review and Feedback](https://github.com/microcks/community/tree/main/install/azure)            |
 | **Oracle Cloud**           | Oracle Container Engine for Kubernetes (OKE) | [OKE Documentation](https://docs.oracle.com/en-us/iaas/Content/ContEng/Concepts/contengoverview.htm) | [Completed – Awaiting Review and Feedback](https://github.com/microcks/community/tree/main/install/oracle)              |
-| **OVH**                    | OVH Managed Kubernetes                  | [OVH Kubernetes Documentation](https://docs.ovh.com/gb/en/kubernetes/)                           | [Looking for Contributions](https://github.com/microcks/community/tree/main/install/ovh)                 |
+| **OVHcloud**                    | OVH Managed Kubernetes Service (MKS)                  | [OVHcloud Kubernetes Documentation](https://docs.ovhcloud.com/en/guides/public-cloud/containers-orchestration/managed-kubernetes/overview)                           | [Completed – Awaiting Review and Feedback](https://github.com/microcks/community/tree/main/install/ovhcloud)                 |
 | **Scaleway**               | Scaleway Kubernetes Kapsule             | [Scaleway Kapsule Documentation](https://www.scaleway.com/en/docs/containers/kapsule/)           | [Looking for Contributions](https://github.com/microcks/community/tree/main/install/scaleway)            |
