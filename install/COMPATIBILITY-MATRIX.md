@@ -29,14 +29,15 @@ If you're using Microcks in production, please contribute your configuration det
 
 The table below shows which Cloud Providers have been tested and validated with different Microcks versions:
 
-| Certified Cloud Providers | 1.10.x | 1.11.x | 1.12.x |
-|---------------------------|--------|--------|--------|
-| Amazon Web Services       |        |        |        |
-| Google Cloud Platform     |        |        |        |
-| Microsoft Azure           |        |        |        |
-| Oracle Cloud              |        |        |        |
-| Scaleway                  |        |        |        |
-| OVH                       |        |        |        |
+| Certified Cloud Providers | 1.10.x | 1.11.x | 1.12.x | 1.14.x |
+|---------------------------|--------|--------|--------|--------|
+| Amazon Web Services       |        |        |        |        |
+| Google Cloud Platform     |        |        |        |        |
+| Microsoft Azure           |        |        |        |        |
+| Oracle Cloud              |        |        |        |        |
+| Scaleway                  |        |        |        |        |
+| OVHcloud                  |        |        |        |   X    |
+|---------------------------|--------|--------|--------|--------|
 
 ### Kubernetes distrib
 

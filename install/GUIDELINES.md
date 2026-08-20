@@ -1,7 +1,7 @@
 # Community-Driven Guidelines for Deploying Microcks in Cloud Production Environments
 
 ## Overview
-This document provides a common guideline for deploying Microcks in production-grade cloud environments using managed Kubernetes services and leveraging cloud-native backing services. It serves as a framework adaptable to various cloud providers (**AWS**, **GCP**, **Azure**, **OVH**, **Oracle**, **Scaleway**, or **Koyeb**, etc.).
+This document provides a common guideline for deploying Microcks in production-grade cloud environments using managed Kubernetes services and leveraging cloud-native backing services. It serves as a framework adaptable to various cloud providers (**AWS**, **GCP**, **Azure**, **OVHcloud**, **Oracle**, **Scaleway**, or **Koyeb**, etc.).
 
 The goal is to guide users through the deployment process by emphasizing the use of external Keycloak for authentication, native PostgreSQL-compatible databases for data management, and the deployment of Microcks via Helm charts. While the specific cloud provider implementations may vary (e.g., cloud provider-managed services like databases), the document focuses on the essential steps required, leaving the precise configuration and commands to be adapted based on the user’s cloud provider’s tools, documentation, and community-contributed examples.
 

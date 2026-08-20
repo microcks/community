@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides a step-by-step approach to deploying **Microcks** on an **OVHcloud Managed Kubernetes Service (MKS)** cluster. It includes setting up **Ingress with Public Cloud Load Balancer**.
+This guide provides a step-by-step approach to deploy **Microcks** on an **OVHcloud Managed Kubernetes Service (MKS)** cluster. It includes setting up **Gateway API** with **OVHcloud Public Cloud Load Balancer**.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Alternatively, you can use the `ovhcloud login` command to authenticate interact
 
 Configure the Kubernetes cluster information:
 
-For example:
+Define your cluster configuration:
 
 ```sh
 export CLUSTER_NAME="microcks"
@@ -50,7 +50,7 @@ Create the Kubernetes cluster:
 CLUSTER_ID=$(ovhcloud cloud mks create --name $CLUSTER_NAME --region $REGION --plan $PLAN | grep -oE '[0-9a-f-]{36}')
 ```
 
-Wait for 2-4 minutes for the cluster to be provisioned.
+Wait for 2-3 minutes for the cluster to be provisioned.
 
 Check the status of the Kubernetes cluster:
 
@@ -58,15 +58,15 @@ Check the status of the Kubernetes cluster:
 ovhcloud cloud mks get $CLUSTER_ID
 ```
 
-Note that for production usage, you should consider using a "standard" plan instead of the free plan.
+For production usage, consider using a `standard` plan instead of the `free` plan.
 
 ### 2.2 Create the MKS node pool
 
-Microcks is composed of several Kubernetes workloads, including the Microcks application, Keycloak, MongoDB and the Postman runtime.
+Microcks is composed of several Kubernetes workloads, including the Microcks application, Keycloak and its PostgreSQL instance, MongoDB and the Postman runtime.
 
 For a small installation, a node pool with three general-purpose nodes is a reasonable starting point.
 
-For example:
+Define your node pool configuration:
 
 ```sh
 export NODEPOOL_NAME="microcks-np"
@@ -110,41 +110,192 @@ kubectl get nodes
 
 You should see several nodes in the `Ready` state.
 
-## 3. Deploy and configure Ingress Controller
+## 3. Deploy Envoy Gateway API Controller
 
-### 3.1 Ingress Controller deployment
+Envoy Gateway implements the Kubernetes Gateway API and creates an Envoy proxy infrastructure for each Gateway.
 
-Install NGINX Ingress Controller:
+### 3.1 Install Envoy Gateway
+
+Install Envoy Gateway using Helm:
 
 ```sh
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx \
-  --create-namespace \
-  --set controller.service.type=LoadBalancer \
-  --set controller.config."proxy-buffer-size"="128k"
+helm install envoy-gateway oci://docker.io/envoyproxy/gateway-helm -n envoy-gateway-system --create-namespace
 ```
 
-Get External IP of Ingress Controller once available:
+Check the installation:
 
 ```sh
-kubectl get svc -n ingress-nginx ingress-nginx-controller
+kubectl get pods -n envoy-gateway-system
+```
+
+All the pods should be in the `Running` state.
+
+### 3.2 Deploy the Envoy Gateway Class
+
+A `GatewayClass` defines which controller will manage your Gateways.
+Create a `GatewayClass` for Envoy Gateway:
+
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+EOF
+```
+
+Check the envoy Gateway Class is created:
+
+```sh
+kubectl get gatewayclass
 --- OUTPUT ---
-NAME                       TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-ingress-nginx-controller   LoadBalancer   10.3.252.218   <INGRESS_IP>   80:30624/TCP,443:30574/TCP   3m39s
+NAME    CONTROLLER                                      ACCEPTED   AGE
+envoy   gateway.envoyproxy.io/gatewayclass-controller   True       3s
 ```
 
-Note: The OVHcloud Public Cloud Load Balancer is creating. It may take a few minutes for the EXTERNAL-IP to be assigned.
+### 3.3 Install cert-manager for SSL Certificates
 
-### 3.2 Configure DNS for Ingress Controller
-
-If you have a `Custom Domain` create an `A` record in your DNS provider to point your domain/subdomain to the INGRESS IP. For example:
-
+```sh
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set crds.enabled=true --set config.gatewayAPI.enabled=true
 ```
-keycloak.YOUR-DOMAIN.com pointing to <INGRESS_IP>
-microcks.YOUR-DOMAIN.com pointing to <INGRESS_IP>
+
+Create `ClusterIssuer` for Let's Encrypt:
+
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-microcks
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: <your-email@example.com>   # Update with your email address
+    privateKeySecretRef:
+      name: letsencrypt-prod-microcks
+    solvers:
+    - http01:
+        gatewayHTTPRoute:
+          parentRefs:
+            - name: microcks-gateway
+              namespace: microcks
+              group: gateway.networking.k8s.io
+              kind: Gateway
+EOF
+```
+
+### 3.4 Create the Envoy Gateway
+
+Microcks will reference a Gateway named `microcks-gateway`.
+
+Create the namespace:
+
+```sh
+kubectl create namespace microcks
+```
+
+Create the `Gateway`:
+
+```sh
+cat <<EOF | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: microcks-gateway
+  namespace: microcks
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-microcks
+spec:
+  gatewayClassName: envoy
+
+  listeners:
+    - name: microcks-http
+      hostname: microcks.<YOUR_DOMAIN>.com
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    - name: microcks-https
+      hostname: microcks.<YOUR_DOMAIN>.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: microcks-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    - name: microcks-grpc
+      hostname: microcks-grpc.<YOUR_DOMAIN>.com
+      protocol: TLS
+      port: 443
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    - name: keycloak-http
+      hostname: keycloak.<YOUR_DOMAIN>.com
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+    - name: keycloak-https
+      hostname: keycloak.<YOUR_DOMAIN>.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: keycloak-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+EOF
+```
+
+Check the envoy Gateway is created and programmed:
+
+```sh
+kubectl get gateway -n microcks
+--- OUTPUT ---
+NAME               CLASS   ADDRESS         PROGRAMMED   AGE
+microcks-gateway   envoy   xx.xx.xx.xx.    True         3m49s
+```
+
+At this stage, the Gateway should be `Accepted=True` and `Programmed=True`, wait a few minutes for the Gateway to be programmed and the OVHcloud Public Cloud Load Balancer to be provisioned.
+
+### 3.5 Configure DNS
+
+Get the external address assigned to the Gateway:
+
+```sh
+export GATEWAY_IP=$(kubectl get gateway microcks-gateway \
+  -n microcks \
+  -o jsonpath='{.status.addresses[0].value}')
+
+echo $GATEWAY_IP
+--- OUTPUT ---
+xx.xx.xx.xx
+```
+
+If you are using a custom domain, create the following DNS records:
+
+```sh
+microcks.<YOUR_DOMAIN>.com       A    <GATEWAY_IP>
+microcks-grpc.<YOUR_DOMAIN>.com  A    <GATEWAY_IP>
+keycloak.<YOUR_DOMAIN>.com       A    <GATEWAY_IP>
 ```
 
 You can do it easily at OVHcloud in the Domain names management console if you have your domain registered with OVHcloud:
@@ -154,8 +305,9 @@ You can do it easily at OVHcloud in the Domain names management console if you h
 After the creation, wait a little bit for the DNS propagation to be completed. You can check it with the following command:
 
 ```sh
-dig keycloak.YOUR-DOMAIN.com +noall +answer
-dig microcks.YOUR-DOMAIN.com +noall +answer
+dig keycloak.<YOUR-DOMAIN>.com +noall +answer
+dig microcks.<YOUR-DOMAIN>.com +noall +answer
+dig microcks-grpc.<YOUR_DOMAIN>.com +noall +answer
 ```
 
 Or, if you don't have a custom domain, you can use a free domain by using `nip.io` for your domain names, such as:
@@ -163,35 +315,6 @@ Or, if you don't have a custom domain, you can use a free domain by using `nip.i
 ```
 keycloak.<INGRESS_IP>.nip.io
 microcks.<INGRESS_IP>.nip.io
-```
-
-### 3.3 Install cert-manager for SSL Certificates
-
-```sh
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true
-```
-
-Create `ClusterIssuer` for Let's Encrypt:
-
-```sh
-$ cat <<EOF | kubectl apply -f -
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: <your-email@example.com>   # Update with your email address
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-EOF
 ```
 
 ## 4. Install Microcks using Helm
@@ -210,33 +333,31 @@ Create the `microcks_values.yaml` file with the configuration below. Replace the
 ```sh
 cat > microcks_values.yaml <<EOF
 appName: microcks
-ingresses: true
+
+ingresses: false
+gatewayRoutes: true
+
+gatewayRefName: microcks-gateway
+gatewayRefNamespace: microcks
+gatewayRefSectionName: microcks-https
+grpcGatewayRefSectionName: microcks-grpc
 
 microcks:
   url: microcks.<YOUR_DOMAIN>.com
-  ingressClassName: nginx
-  ingressAnnotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-   
+  ingressSecretRef: microcks-tls
+  generateCert: false
+
   grpcEnableTLS: true
-  grpcIngressClassName: nginx
-  grpcIngressAnnotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"  
 
 keycloak:
   url: keycloak.<YOUR_DOMAIN>.com
-  privateUrl: https://keycloak.<YOUR_DOMAIN>.com
-  ingressClassName: nginx
-  ingressAnnotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    
-ingress:
-  enabled: true
-  tls: true
+  privateUrl: http://microcks-keycloak.microcks.svc.cluster.local:8080
+  ingressSecretRef: keycloak-tls
+  generateCert: false
+
+  gatewayRefName: microcks-gateway
+  gatewayRefNamespace: microcks
+  gatewayRefSectionName: keycloak-https
 EOF
 ```
 
@@ -261,16 +382,22 @@ microcks-mongodb-7ddff9f544-8rdcx              1/1     Running   0              
 microcks-postman-runtime-5699859b86-58mr7      1/1     Running   0              19m
 ```
 
-Wait until all pods are in the `Running` state.
+Wait until all pods are in the `Running` state and containers are ready.
 
 
-### 4.5 Get Microcks Ingress and Access URL
+### 4.5 Check HTTPRoutes
 
 ```sh
-kubectl get ingress -n microcks
+kubectl get httproute -n microcks
+--- OUTPUT ---
+NAME                HOSTNAMES                    AGE
+microcks            ["microcks.<YOUR_DOMAIN>.com"]   3m34s
+microcks-keycloak   ["keycloak.<YOUR_DOMAIN>.com"]   3m34s
 ```
 
-Microcks is now available at: https://microcks.YOUR-DOMAIN.com  gRPC mock service is available at: https://microcks-grpc.YOUR-DOMAIN.com
+Microcks is now available at: https://microcks.<YOUR-DOMAIN>.com.
+gRPC mock service is available at: https://microcks-grpc.YOUR-DOMAIN.com.
+Keycloak is available at: https://keycloak.<YOUR-DOMAIN>.com.
 
 🎉 Congratulations! You have successfully deployed Microcks on OVHcloud MKS. Now, you can start using Microcks to mock and test your APIs seamlessly in your cloud environment.
 
@@ -285,8 +412,10 @@ ovhcloud cloud mks delete $CLUSTER_ID
 ```
 It will delete the cluster and all associated resources, including node pools, load balancers, and ingress controllers.
 
+## Improvements
 
-Improvement:
-* gateway api instead of nginx ingress controller + cert-manager for SSL certificates
-* deploy the postgreSQL DB on an OVHcloud managed database service instead of using the default PostgreSQL deployment in the Microcks Helm chart. This will provide better performance, scalability, and reliability for your Microcks installation.
-* deploy the mongodb on an OVHcloud managed database service instead of using the default MongoDB deployment in the Microcks Helm chart. This will provide better performance, scalability, and reliability for your Microcks installation.
+This guide can be improved by implementing the following enhancements:
+* Deploy the PostgreSQL DB on an **OVHcloud Managed Database** service instead of using the default PostgreSQL deployment in the Microcks Helm chart. 
+* Deploy the MongoDB on an **OVHcloud Managed Database** service instead of using the default MongoDB deployment in the Microcks Helm chart.
+
+This will provide better performance, scalability, and reliability for your Microcks installation.
