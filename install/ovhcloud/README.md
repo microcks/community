@@ -412,6 +412,8 @@ ovhcloud cloud mks delete $CLUSTER_ID
 ```
 It will delete the cluster and all associated resources, including node pools, load balancers, and ingress controllers.
 
+2. Delete the DNS records you created for your domain.
+
 ## Improvements
 
 This guide can be improved by implementing the following enhancements:
