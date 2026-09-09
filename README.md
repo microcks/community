@@ -64,14 +64,16 @@ We hold monthly Open Community Meetings for each region, which means we have bi-
 
 2. **Fourth Thursday of each month**
   - Microcks Community Meetings - America-friendly
-  - Time: Thursday, 6–7 p.m. CET / 1–2 p.m. EST / 9–12 a.m. PST
+  - Time: Thursday, 6–7 p.m. CET / 1–2 p.m. EST / 9–10 a.m. PST
 
-You can always catch up offline by watching the recordings on the Microcks YouTube channel.
+All Microcks community meetings are recorded. Recordings from live sessions are available under [YouTube Streams](https://www.youtube.com/@Microcks/streams), while separately uploaded recordings are available under [YouTube Videos](https://www.youtube.com/@Microcks/videos).
+
+We do not publish written minutes for every community call. Significant proposals, decisions and follow-up actions are documented through public GitHub issues, pull requests or discussions so that they remain searchable and reviewable.
 
 | Asset | Link        |
 |:-----------|:------------|
 | 🔗 Open Community Meeting | [**Monthly schedule**](https://zoom-lfx.platform.linuxfoundation.org/meetings/microcks?view=month)<br>
-| 🎥 Meeting Recordings | [**YouTube channel**](https://www.youtube.com/@Microcks/community)
+| 🎥 Meeting Recordings | [**YouTube Streams**](https://www.youtube.com/@Microcks/streams) and [**YouTube Videos**](https://www.youtube.com/@Microcks/videos)
 
 ## Getting involved
 

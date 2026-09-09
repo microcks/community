@@ -41,3 +41,7 @@ Visit our [meeting agenda page](https://zoom-lfx.platform.linuxfoundation.org/me
 ![](./assets/images/join-our-meetings-7.png)
 
 👉 You’ll need to select upcoming months to view the next scheduled meetings and register, as outlined above. Clicking on a grey (past date) will only redirect you to the Zoom recording of that previous meeting.
+
+## 5. Watch Past Sessions
+
+All Microcks community meetings are recorded. Recordings from live sessions are available under [YouTube Streams](https://www.youtube.com/@Microcks/streams), while separately uploaded recordings are available under [YouTube Videos](https://www.youtube.com/@Microcks/videos).
