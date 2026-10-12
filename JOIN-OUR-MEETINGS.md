@@ -4,7 +4,7 @@
 
 ## 1. Meeting Schedule
 - **APAC-friendly Meeting:** Second Thursday of each month  
-  - Time: 9–10 a.m. CET / 1–2 p.m. Bengaluru
+  - Time: 9–10 a.m. CET / 1:30–2:30 p.m. Bengaluru (IST)
 - **America-friendly Meeting:** Fourth Thursday of each month  
   - Time: 6–7 p.m. CET / 1–2 p.m. EST / 9–10 a.m. PST
 
