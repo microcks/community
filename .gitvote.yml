@@ -36,4 +36,9 @@ profiles:
     allowed_voters:
       teams:
         - steering-committee
+      # Maintainers are binding voters on SC membership, see steering/STEERING.md
+      users:
+        - lbroudoux
+        - yada
+        - SebastienDegodez
       exclude_team_maintainers: false
