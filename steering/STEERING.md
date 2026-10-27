@@ -43,6 +43,13 @@ At this time, no fixed upper limit is imposed. The project values inclusivity an
 
 Should the size of the Steering Committee grow to a point where its effectiveness, agility, or governance clarity is impacted, the Committee may introduce a formal upper bound through an amendment to this charter.
 
+### Composition and Representation
+
+The Steering Committee brings together the diverse voices of the Microcks ecosystem, with a balanced mix of adopters and contributors:
+
+- **Adopter representation:** seats for organizations or institutions that use Microcks at scale, so adopters can guide strategic alignment without being daily code contributors. Seats rest on mutual, community-driven contribution, not on a vendor/client relationship.
+- **Contributor representation:** seats for independent or institutional contributors with a long-term commitment, project stewardship and technical expertise.
+
 ### Eligibility Criteria
 
 To be eligible for membership, a candidate must:
@@ -53,28 +60,45 @@ To be eligible for membership, a candidate must:
 3. Be willing and able to attend regularly scheduled Steering Committee meetings.
 4. Abide by the [Microcks Code of Conduct](https://github.com/microcks/.github/blob/main/CODE_OF_CONDUCT.md).
 
-### Nomination & Selection
+### How to Apply or Nominate
 
-- Candidates may be nominated by:
-  - Current Steering Committee members, or
-  - Microcks maintainers/code owners.
-- A candidate must have at least **two nominators** from this group.
+Seats are filled through a hybrid application and invitation model:
 
-### Appointment Process
+- **Self-application:** anyone meeting the eligibility criteria may apply.
+- **Invitation:** current Steering Committee members or Maintainers may invite a qualified candidate, who then applies the same way.
 
-If 3 or fewer eligible candidates are nominated for available seats, the nominees shall assume their seats without requiring a formal vote.
+Every application is a **GitHub issue** in the `microcks/community` repository with the `steering` label, containing:
 
-In the event that 3 Steering Committee members are already seated and additional nominations are received, the existing Steering Committee members shall evaluate and select new members using a simple ranked voting process.
+1. Name, organization and GitHub profile
+2. Representation type (adopter or contributor)
+3. Background: Microcks usage or contributions, and community activity (Discord, meetings, issues)
+4. Motivation and intent for the Steering Committee
+5. Explicit confirmation of the eligibility criteria (including meeting attendance), of this charter and of the Code of Conduct
 
-In case of a tie:
+### Review and Selection
 
-- The tie shall be resolved by a vote among maintainers.
-- If still tied, a fair and transparent random selection process will be used.
+1. An SC member or Maintainer checks the application against the eligibility criteria and the required information.
+2. A formal vote is then opened on the issue (for example with `/vote-sc`) and stays open for **14 days**.
+3. **Voting body:** Steering Committee members and Maintainers. Maintainer votes are counted per organization, as defined in [GOVERNANCE.md](https://github.com/microcks/.github/blob/main/GOVERNANCE.md#decision-making-and-voting). The candidate does not vote, and conflicts of interest must be disclosed.
+4. **Approval threshold:** at least two-thirds of all eligible votes, rounded up. Abstentions count in the total.
+5. The bot tally is indicative: the organization-balanced result is recorded on the issue.
+6. A candidate whose application is not approved may reapply with new information.
+
+### Operational Roles in Selection
+
+- **SC members** lead the Steering Committee's business: community health, organization outreach and strategic alignment.
+- **Maintainers** provide technical context and feasibility, and ensure new members preserve the open-governance spirit of the project.
+
+### Discussion and Visibility
+
+- Applications, feedback and deliberations are **public by default**.
+- Sensitive concerns (legal, harassment, private organizational matters) may be moved to a private session by SC members or Maintainers.
+- Discord and SC or community meetings can be used to ask questions about open applications.
 
 ### Term Duration
 
 - Membership duration is **one year**.
-- Members may seek renewal following the same nomination process.
+- Members may seek renewal by reapplying through the process above.
 - Membership expires if eligibility conditions are no longer met.
 
 ## Current Steering Committee Members 👥
@@ -100,23 +124,17 @@ Maintainers are expected to attend meetings to provide input and alignment.
 
 The Steering Committee operates primarily by **consensus**.
 
-If consensus cannot be reached:
+If consensus cannot be reached, a simple majority vote among SC members applies.
 
-- A simple majority vote among SC members applies.
-- Certain governance changes may require approval from both:
-  - A majority of Steering Committee members, and
-  - A majority of maintainers.
+Membership decisions follow "Review and Selection". Changes to this charter follow "Changes to This Charter".
 
 ## Changes to This Charter
 
-Changes to this document must be approved by:
-
-- A majority of Steering Committee members, and
-- A majority of Microcks maintainers.
+This charter is a supporting governance document. Changes to it require a formal organization-balanced vote as defined in [GOVERNANCE.md](https://github.com/microcks/.github/blob/main/GOVERNANCE.md#decision-making-and-voting), plus a majority of Steering Committee members.
 
 Exceptions:
 
-- The list of Steering Committee members may be updated under the conditions defined in the Membership section.
+- The list of Steering Committee members may be updated once a membership vote under "Review and Selection" has passed.
 
 ## Former Steering Committee Members
 
@@ -136,6 +154,7 @@ The Steering Committee commits to:
 - Maintaining open communication with the community.
 - Ensuring governance decisions are documented.
 - Supporting inclusivity and diversity within the ecosystem.
+- Archiving all votes, milestones and final decisions on the tracking issue, and publicly announcing new members on Microcks' official channels.
 
 ## Code of Conduct
 
